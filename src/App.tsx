@@ -328,31 +328,84 @@ const Services = () => {
 
 const CTA = () => {
   return (
-    <section className="section">
-      <div className="container">
-        <div className="relative rounded-[40px] overflow-hidden glass p-12 md:p-20 text-center">
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <img src="/images/Artboard 3-4.jpg.jpeg" alt="Protection BG" className="w-full h-full object-cover opacity-10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00CCFF]/10 to-[#6600CC]/10"></div>
+    <section className="section relative overflow-hidden bg-[#050510]">
+      {/* Dynamic background lights */}
+      <div className="absolute top-0 right-0 w-[60%] h-full bg-[#00CCFF]/5 blur-[120px] rounded-full -rotate-12 translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-[60%] h-full bg-[#6600CC]/5 blur-[120px] rounded-full rotate-12 -translate-x-1/2"></div>
+
+      <div className="container relative z-10">
+        <motion.div
+          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 60 }}
+          viewport={{ once: true }}
+          className="relative rounded-[50px] overflow-hidden glass p-16 md:p-28 text-center border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]"
+        >
+          {/* Subtle background image */}
+          <div className="absolute inset-0 z-0 scale-105">
+            <img src="/images/Artboard 3-4.jpg.jpeg" alt="Protection BG" className="w-full h-full object-cover opacity-10 grayscale" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/60 to-[#050510]"></div>
           </div>
 
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-4xl md:text-6xl font-bold mb-8 italic">
-              "Compliance is not a department. It is a <span className="text-[#00CCFF]">standard</span>."
-            </h2>
-            <p className="text-xl text-[#b0b0d0] mb-10">
-              Engage Cybereign for a private governance consultation and start your journey towards resilient digital growth.
-            </p>
-            <div className="flex flex-wrap justify-center gap-6">
-              <button className="px-10 py-5 bg-[#00CCFF] hover:bg-[#00bbee] text-[#050510] font-black rounded-full shadow-[0_0_30px_rgba(0,204,255,0.4)] transition-all transform hover:scale-105 active:scale-95 text-lg">
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-10"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[#00CCFF] text-xs font-black uppercase tracking-[0.2em] mb-8">
+                <Shield className="w-4 h-4" /> Global Advisory Excellence
+              </div>
+              <h2 className="text-4xl md:text-7xl font-bold mb-10 leading-[1.1] tracking-tight text-white">
+                "Compliance is not a department. It is a <span className="gradient-text">Standard.</span>"
+              </h2>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="text-xl md:text-2xl text-[#b0b0d0] mb-14 max-w-2xl mx-auto leading-relaxed font-light"
+            >
+              Engage Cybereign for a <span className="text-white font-bold underline decoration-[#00CCFF]/40 decoration-4 underline-offset-8">private governance consultation</span> and start your journey towards resilient digital growth.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-col sm:flex-row justify-center gap-8 items-center"
+            >
+              <button className="w-full sm:w-auto px-14 py-7 bg-white text-[#050510] font-black rounded-full shadow-[0_30px_60px_rgba(255,255,255,0.2)] hover:shadow-[0_40px_80px_rgba(255,255,255,0.4)] transition-all transform hover:-translate-y-2 active:scale-95 text-xl">
                 BOOK CONSULTATION NOW
               </button>
-              <button className="px-10 py-5 border-2 border-white/20 hover:border-white/40 text-white font-bold rounded-full transition-all text-lg">
-                CONTACT SALES
+
+              <button className="w-full sm:w-auto px-14 py-7 glass-card rounded-full text-white font-bold hover:bg-white/10 transition-all border border-white/20 text-xl flex items-center justify-center gap-4 group">
+                CONTACT SALES <ArrowRight className="w-6 h-6 text-[#00CCFF] group-hover:translate-x-2 transition-transform" />
               </button>
+            </motion.div>
+
+            {/* Verification Badge */}
+            <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-center gap-8 opacity-60">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#00CCFF]/10 flex items-center justify-center border border-[#00CCFF]/20">
+                  <CheckCircle2 className="w-4 h-4 text-[#00CCFF]" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-white">ISO 27001 Certified</span>
+              </div>
+              <div className="hidden md:block w-1 h-1 bg-white/20 rounded-full"></div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#6600CC]/10 flex items-center justify-center border border-[#6600CC]/20">
+                  <CheckCircle2 className="w-4 h-4 text-[#6600CC]" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-white">GDPR Compliant Advisory</span>
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -316,6 +316,14 @@
   color: #ffffff;
 }
 
+.bg-white {
+  background-color: #ffffff;
+}
+
+.bg-primary {
+  background-color: #00CCFF;
+}
+
 .text-center {
   text-align: center;
 }
