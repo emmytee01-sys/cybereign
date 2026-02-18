@@ -41,16 +41,7 @@ const Navbar = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'glass py-4 shadow-2xl' : 'py-6'}`}>
       <div className="container flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <motion.div
-            initial={{ rotate: -10, scale: 0.9 }}
-            animate={{ rotate: 0, scale: 1 }}
-            className="w-10 h-10 bg-gradient-to-br from-[#00CCFF] to-[#6600CC] rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(0,204,255,0.3)]"
-          >
-            <Shield className="text-white w-6 h-6" />
-          </motion.div>
-          <span className="text-xl font-bold tracking-tighter uppercase font-space ml-2">
-            Cybereign<span className="text-[#00CCFF]">.</span>
-          </span>
+          <img src="/images/logo.png" alt="Cybereign Logo" className="h-7 w-auto object-contain" />
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -418,10 +409,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#00CCFF] to-[#6600CC] rounded flex items-center justify-center">
-                <Shield className="text-white w-5 h-5" />
-              </div>
-              <span className="text-xl font-bold font-space uppercase">Cybereign</span>
+              <img src="/images/logo.png" alt="Cybereign Logo" className="h-8 w-auto" />
             </div>
             <p className="text-[#b0b0d0] text-sm mb-6">
               Leading the way in digital governance and risk management for the modern global landscape.
@@ -492,8 +480,9 @@ const App: React.FC = () => {
       <section className="py-20 overflow-hidden pointer-events-none">
         <div className="flex gap-8 animate-scroll">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 flex items-center gap-4 text-6xl md:text-8xl font-black text-white/5 font-space uppercase">
-              Cybereign <Shield className="w-16 h-16" />
+            <div key={i} className="flex-shrink-0 flex items-center gap-8 text-6xl md:text-8xl font-black text-white/5 font-space uppercase">
+              <img src="/images/logo.png" alt="Logo" className="h-16 md:h-24 opacity-10 grayscale" />
+              <Shield className="w-16 h-16" />
             </div>
           ))}
         </div>
