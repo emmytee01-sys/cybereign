@@ -16,8 +16,6 @@ import {
   Linkedin,
   Twitter,
   Github,
-  Mail,
-  Phone,
   Instagram
 } from 'lucide-react';
 import './App.css';
