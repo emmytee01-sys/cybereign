@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Shield,
   Lock,
   Terminal,
   ChevronRight,
-  Menu,
-  X,
   Globe,
   Cpu,
   Activity,
@@ -14,89 +12,84 @@ import {
   ArrowRight,
   CheckCircle2,
   FileSearch,
-  Award
+  Award,
+  Linkedin,
+  Twitter,
+  Github,
+  Mail,
+  Phone,
+  Instagram
 } from 'lucide-react';
 import './App.css';
 
-const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+type NavItem = {
+  label: string;
+  href: string;
+};
 
-  const navLinks = [
-    { name: 'Solutions', href: '#solutions' },
-    { name: 'About Us', href: '#about' },
-    { name: 'Expertise', href: '#expertise' },
-    { name: 'Governance', href: '#governance' },
-  ];
+const navItems: NavItem[] = [
+  { label: 'Home', href: '#hero' },
+  { label: 'Solutions', href: '#solutions' },
+  { label: 'Features', href: '#features' },
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#contact' }
+];
+
+const Header: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'glass py-4 shadow-2xl' : 'py-6'}`}>
-      <div className="container flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/images/logo.png" alt="Cybereign Logo" className="h-3.5 w-auto max-w-[120px] object-contain" />
-        </div>
+    <header className="header">
+      <div className="container shell">
+        <a className="logo" href="#hero">
+          <img src="/images/logo.png" alt="Cybereign" />
+        </a>
 
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-sm font-medium hover:text-[#00CCFF] transition-colors relative group"
-            >
-              {link.name}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#00CCFF] transition-all group-hover:w-full"></span>
-            </a>
+        <button
+          className="mobileMenuButton"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation"
+        >
+          <span className={`hamburger ${mobileMenuOpen ? 'hamburgerOpen' : ''}`}>
+            <span className="hamburgerLine" />
+            <span className="hamburgerLine" />
+            <span className="hamburgerLine" />
+          </span>
+        </button>
+
+        <nav className={`nav ${mobileMenuOpen ? 'navOpen' : ''}`}>
+          {navItems.map((item) => (
+            <div key={item.label} className="navItemWrapper">
+              <a
+                href={item.href}
+                className="navItem"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            </div>
           ))}
-          <button className="px-6 py-2.5 bg-gradient-to-r from-[#00CCFF] to-[#6600CC] rounded-full text-sm font-bold text-white shadow-[0_0_20px_rgba(0,204,255,0.2)] hover:shadow-[0_0_30px_rgba(0,204,255,0.4)] transition-all transform hover:-translate-y-0.5 active:scale-95">
-            Book Consultation
+        </nav>
+
+        <div className={`actions ${mobileMenuOpen ? 'actionsOpen' : ''}`}>
+          <button className="ctaButton">
+            Request Service
           </button>
         </div>
-
-        <button className="md:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </button>
       </div>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 glass border-t border-white/5 py-8 px-6 md:hidden flex flex-col gap-6 items-center"
-          >
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-lg font-medium hover:text-[#00CCFF]"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </a>
-            ))}
-            <button className="w-full max-w-xs px-6 py-3 bg-gradient-to-r from-[#00CCFF] to-[#6600CC] rounded-full font-bold">
-              Book Consultation
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+    </header>
   );
 };
 
+
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section
+      id="hero"
+      className="relative min-h-screen flex items-center pt-32 md:pt-40 overflow-hidden hero-section"
+      style={{ scrollMarginTop: '96px' }}
+    >
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[#00CCFF]/10 blur-[120px] rounded-full"></div>
@@ -108,6 +101,11 @@ const Hero = () => {
             ))}
           </div>
         </div>
+
+        {/* Cyber orbits / animated lines */}
+        <div className="hero-orbit hero-orbit--one"></div>
+        <div className="hero-orbit hero-orbit--two"></div>
+        <div className="hero-orbit hero-orbit--three"></div>
       </div>
 
       <div className="container relative z-10 grid md:grid-cols-2 gap-12 items-center">
@@ -153,12 +151,12 @@ const Hero = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="relative"
+          className="relative hero-image-wrapper"
         >
-          <div className="relative z-10 rounded-3xl overflow-hidden glass shadow-2xl border border-white/10">
+          <div className="relative z-10 rounded-3xl overflow-hidden glass shadow-2xl border border-white/10 hero-image-card">
             <img
               src="/images/Artboard 3-2.jpg.jpeg"
               alt="Cybersecurity Visualization"
@@ -199,7 +197,7 @@ const Hero = () => {
 
 const VisionMission = () => {
   return (
-    <section id="about" className="section relative">
+    <div id="about" className="section relative">
       <div className="container overflow-hidden">
         <div className="grid md:grid-cols-2 gap-12 items-stretch">
           <motion.div
@@ -240,7 +238,7 @@ const VisionMission = () => {
           </motion.div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
@@ -273,7 +271,7 @@ const Services = () => {
   ];
 
   return (
-    <section id="solutions" className="section bg-[#08081a]/50">
+    <div id="solutions" className="section bg-[#08081a]/50">
       <div className="container">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div
@@ -313,156 +311,251 @@ const Services = () => {
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
 const CTA = () => {
   return (
-    <section className="section relative overflow-hidden bg-[#050510]">
-      {/* Dynamic background lights */}
-      <div className="absolute top-0 right-0 w-[60%] h-full bg-[#00CCFF]/5 blur-[120px] rounded-full -rotate-12 translate-x-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-[60%] h-full bg-[#6600CC]/5 blur-[120px] rounded-full rotate-12 -translate-x-1/2"></div>
+    <div className="section relative overflow-hidden bg-[#050510] py-32">
+      {/* Background Decor */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,204,255,0.05)_0%,transparent_50%)] pointer-events-none"></div>
 
       <div className="container relative z-10">
         <motion.div
-          whileInView={{ opacity: 1, y: 0 }}
-          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           viewport={{ once: true }}
-          className="relative rounded-[50px] overflow-hidden glass p-16 md:p-28 text-center border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)]"
+          transition={{ duration: 0.8 }}
+          className="relative rounded-[3rem] overflow-hidden bg-gradient-to-br from-[#0c0c20] to-[#050510] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] group"
         >
-          {/* Subtle background image */}
-          <div className="absolute inset-0 z-0 scale-105">
-            <img src="/images/Artboard 3-4.jpg.jpeg" alt="Protection BG" className="w-full h-full object-cover opacity-10 grayscale" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/60 to-[#050510]"></div>
-          </div>
+          {/* Animated Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] pointer-events-none"></div>
 
-          <div className="relative z-10 max-w-4xl mx-auto">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00CCFF]/50 to-transparent"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#00CCFF]/10 blur-[100px] rounded-full pointer-events-none group-hover:bg-[#00CCFF]/20 transition-colors duration-700"></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#6600CC]/10 blur-[100px] rounded-full pointer-events-none group-hover:bg-[#6600CC]/20 transition-colors duration-700"></div>
+
+          <div className="relative z-10 px-6 py-20 md:p-32 text-center">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-10"
+              className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[#00CCFF] font-mono text-xs md:text-sm tracking-widest mb-12 backdrop-blur-md uppercase"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[#00CCFF] text-xs font-black uppercase tracking-[0.2em] mb-8">
-                <Shield className="w-4 h-4" /> Global Advisory Excellence
-              </div>
-              <h2 className="text-4xl md:text-7xl font-bold mb-10 leading-[1.1] tracking-tight text-white">
-                "Compliance is not a department. It is a <span className="gradient-text">Standard.</span>"
-              </h2>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00CCFF] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00CCFF]"></span>
+              </span>
+              Global Advisory Excellence
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="text-xl md:text-2xl text-[#b0b0d0] mb-14 max-w-2xl mx-auto leading-relaxed font-light"
-            >
-              Engage Cybereign for a <span className="text-white font-bold underline decoration-[#00CCFF]/40 decoration-4 underline-offset-8">private governance consultation</span> and start your journey towards resilient digital growth.
-            </motion.p>
+            <h2 className="text-4xl md:text-6xl lg:text-8xl font-bold mb-10 leading-[0.9] tracking-tighter text-white">
+              Compliance is not a department. <br className="hidden md:block" /> It is a <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00CCFF] via-[#fff] to-[#00CCFF] animate-gradient bg-[length:200%_auto]">Standard.</span>
+            </h2>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row justify-center gap-8 items-center"
-            >
-              <button className="w-full sm:w-auto px-14 py-7 bg-white text-[#050510] font-black rounded-full shadow-[0_30px_60px_rgba(255,255,255,0.2)] hover:shadow-[0_40px_80px_rgba(255,255,255,0.4)] transition-all transform hover:-translate-y-2 active:scale-95 text-xl">
-                BOOK CONSULTATION NOW
+            <p className="text-lg md:text-2xl text-[#b0b0d0] mb-16 max-w-3xl mx-auto leading-relaxed font-light">
+              Engage Cybereign for a <span className="text-white font-medium border-b border-[#00CCFF]/50 hover:border-[#00CCFF] transition-colors pb-0.5 cursor-pointer">private governance consultation</span> and start your journey towards resilient digital growth.
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-6 items-center mb-20">
+              <button className="w-full sm:w-auto px-12 py-6 bg-[#00CCFF] text-[#050510] font-black tracking-widest uppercase text-lg hover:bg-[#00e6ff] hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(0,204,255,0.3)] hover:shadow-[0_0_60px_rgba(0,204,255,0.5)]">
+                Book Consultation Now
               </button>
 
-              <button className="w-full sm:w-auto px-14 py-7 glass-card rounded-full text-white font-bold hover:bg-white/10 transition-all border border-white/20 text-xl flex items-center justify-center gap-4 group">
-                CONTACT SALES <ArrowRight className="w-6 h-6 text-[#00CCFF] group-hover:translate-x-2 transition-transform" />
+              <button className="w-full sm:w-auto px-12 py-6 bg-transparent border border-white/10 text-white font-black tracking-widest uppercase text-lg hover:bg-white/5 hover:border-white/30 transition-all flex items-center justify-center gap-3 group">
+                Contact Sales <ArrowRight className="w-5 h-5 text-[#00CCFF] group-hover:translate-x-1 transition-transform" />
               </button>
-            </motion.div>
+            </div>
 
-            {/* Verification Badge */}
-            <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-center gap-8 opacity-60">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#00CCFF]/10 flex items-center justify-center border border-[#00CCFF]/20">
-                  <CheckCircle2 className="w-4 h-4 text-[#00CCFF]" />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-white">ISO 27001 Certified</span>
+            <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
+              <div className="flex items-center gap-3 text-[#8888aa] group-hover:text-[#b0b0d0] transition-colors">
+                <CheckCircle2 className="w-5 h-5 text-[#00CCFF]" />
+                <span className="font-mono text-sm tracking-wider uppercase">ISO 27001 Certified</span>
               </div>
-              <div className="hidden md:block w-1 h-1 bg-white/20 rounded-full"></div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#6600CC]/10 flex items-center justify-center border border-[#6600CC]/20">
-                  <CheckCircle2 className="w-4 h-4 text-[#6600CC]" />
-                </div>
-                <span className="text-xs font-bold uppercase tracking-widest text-white">GDPR Compliant Advisory</span>
+              <div className="hidden md:block w-px h-5 bg-white/10"></div>
+              <div className="flex items-center gap-3 text-[#8888aa] group-hover:text-[#b0b0d0] transition-colors">
+                <CheckCircle2 className="w-5 h-5 text-[#6600CC]" />
+                <span className="font-mono text-sm tracking-wider uppercase">GDPR Compliant Advisory</span>
               </div>
             </div>
+
           </div>
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 
+const BrandStrip = () => (
+  <div className="py-20 overflow-hidden pointer-events-none">
+    <div className="flex gap-8 animate-scroll">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex-shrink-0 flex items-center gap-8 text-6xl md:text-8xl font-black text-white/5 font-space uppercase"
+        >
+          <img
+            src="/images/logo.png"
+            alt="Logo"
+            className="h-16 md:h-24 opacity-10 grayscale"
+          />
+          <Shield className="w-16 h-16" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const FeaturesSection = () => (
+  <section
+    id="features"
+    className="relative bg-[#050510]"
+    style={{ scrollMarginTop: '96px' }}
+  >
+    <VisionMission />
+    <Services />
+    <BrandStrip />
+    <CTA />
+  </section>
+);
+
+
 const Footer = () => {
   return (
-    <footer className="pt-20 pb-10 border-t border-white/5">
-      <div className="container">
-        <div className="grid md:grid-cols-4 gap-12 mb-16">
-          <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-3 mb-6">
-              <img src="/images/logo.png" alt="Cybereign Logo" className="h-8 w-auto" />
-            </div>
-            <p className="text-[#b0b0d0] text-sm mb-6">
-              Leading the way in digital governance and risk management for the modern global landscape.
-            </p>
-            <div className="flex gap-4">
-              {['twitter', 'linkedin', 'github'].map(social => (
-                <a key={social} href="#" className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-[#00CCFF]/20 transition-colors">
-                  <div className="w-5 h-5 bg-[#b0b0d0]" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Solutions</h4>
-            <ul className="space-y-4 text-sm text-[#b0b0d0]">
-              <li><a href="#" className="hover:text-white">Governance Audit</a></li>
-              <li><a href="#" className="hover:text-white">Risk Strategy</a></li>
-              <li><a href="#" className="hover:text-white">Data Protection</a></li>
-              <li><a href="#" className="hover:text-white">Compliance Training</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Company</h4>
-            <ul className="space-y-4 text-sm text-[#b0b0d0]">
-              <li><a href="#" className="hover:text-white">About Us</a></li>
-              <li><a href="#" className="hover:text-white">Our Vision</a></li>
-              <li><a href="#" className="hover:text-white">Mission Statement</a></li>
-              <li><a href="#" className="hover:text-white">Careers</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-6">Contact</h4>
-            <p className="text-[#b0b0d0] text-sm mb-4">info@cybereign.com</p>
-            <p className="text-[#b0b0d0] text-sm mb-4">+234 (0) 800 CYBEREIGN</p>
-            <p className="text-[#b0b0d0] text-sm uppercase font-bold tracking-widest text-xs mt-8">
-              Govern. Comply. Protect.
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[#606080] text-xs">
-            © 2026 Cybereign Consulting Limited. All Rights Reserved.
+    <footer id="contact" className="footer">
+      <div className="footerWrapper">
+        <div className="footerLogoSection">
+          <a href="#hero">
+            <img
+              src="/images/logo.png"
+              alt="Cybereign Logo"
+              className="footerLogo"
+            />
+          </a>
+          <p className="footerDescription">
+            Cybereign is a strategic cybersecurity and digital governance
+            advisory for enterprises operating in complex, regulated
+            environments.
           </p>
-          <div className="flex gap-8 text-xs text-[#606080]">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
-            <a href="#" className="hover:text-white">Cookie Policy</a>
+          <div className="footerSocialLinks">
+            {[
+              { icon: Twitter, href: '#' },
+              { icon: Linkedin, href: '#' },
+              { icon: Github, href: '#' },
+              { icon: Instagram, href: '#' }
+            ].map((social, i) => (
+              <a
+                key={i}
+                href={social.href}
+                className="footerSocialIcon"
+                aria-label={social.icon.name}
+              >
+                <social.icon className="w-4 h-4" />
+              </a>
+            ))}
           </div>
         </div>
+
+        <div className="footerContent">
+          <div className="footerColumn footerColumnProducts">
+            <h3 className="footerColumnTitle">Solutions</h3>
+            <ul className="footerLinkList">
+              <li>
+                <a href="#solutions" className="footerLink">
+                  Governance &amp; Risk
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="footerLink">
+                  Data Protection
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="footerLink">
+                  Compliance Readiness
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="footerLink">
+                  Security Frameworks
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footerColumn footerColumnCompany">
+            <h3 className="footerColumnTitle">Company</h3>
+            <ul className="footerLinkList">
+              <li>
+                <a href="#about" className="footerLink">
+                  About Cybereign
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="footerLink">
+                  Vision &amp; Mission
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="footerLink">
+                  Contact
+                </a>
+              </li>
+              <li>
+                <a href="#hero" className="footerLink">
+                  Book Consultation
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footerColumn footerColumnLegal">
+            <h3 className="footerColumnTitle">Legal</h3>
+            <ul className="footerLinkList">
+              <li>
+                <a href="#" className="footerLink">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="#" className="footerLink">
+                  Terms of Use
+                </a>
+              </li>
+              <li>
+                <a href="#" className="footerLink">
+                  Cookies
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footerColumn footerColumnContact">
+            <h3 className="footerColumnTitle">Contact</h3>
+            <ul className="footerLinkList">
+              <li>
+                <a href="tel:+2348002923734" className="footerLink">
+                  +234 (0) 800 CYBEREIGN
+                </a>
+              </li>
+              <li>
+                <a href="mailto:info@cybereign.com" className="footerLink">
+                  info@cybereign.com
+                </a>
+              </li>
+              <li>
+                <a href="#hero" className="footerLink">
+                  Schedule a consultation
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="footerBottom">
+        <p>© 2026 Cybereign Consulting Limited. All rights reserved.</p>
       </div>
     </footer>
   );
@@ -470,25 +563,13 @@ const Footer = () => {
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <Hero />
-      <VisionMission />
-      <Services />
+    <div className="min-h-screen bg-[#050510] text-white">
+      <Header />
+      <main className="main">
+        <Hero />
+        <FeaturesSection />
+      </main>
 
-      {/* Dynamic Visual Section */}
-      <section className="py-20 overflow-hidden pointer-events-none">
-        <div className="flex gap-8 animate-scroll">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 flex items-center gap-8 text-6xl md:text-8xl font-black text-white/5 font-space uppercase">
-              <img src="/images/logo.png" alt="Logo" className="h-16 md:h-24 opacity-10 grayscale" />
-              <Shield className="w-16 h-16" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <CTA />
       <Footer />
 
       {/* Decorative Elements */}
