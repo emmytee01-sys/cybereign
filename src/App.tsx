@@ -73,7 +73,16 @@ const Header: React.FC = () => {
         </nav>
 
         <div className={`actions ${mobileMenuOpen ? 'actionsOpen' : ''}`}>
-          <button className="ctaButton">
+          <button
+            className="ctaButton"
+            onClick={() => {
+              const el = document.getElementById('service-form');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+              setMobileMenuOpen(false);
+            }}
+          >
             Request Service
           </button>
         </div>
@@ -421,6 +430,76 @@ const FeaturesSection = () => (
 );
 
 
+const ServiceFormSection = () => (
+  <section
+    id="service-form"
+    className="service-section"
+    style={{ scrollMarginTop: '96px' }}
+  >
+    <div className="container">
+      <div className="service-inner">
+        <div className="service-copy">
+          <h2>Request a Governance &amp; Security Engagement</h2>
+          <p>
+            Share a bit about your environment, and our advisory team will reach out with a
+            tailored proposal for governance, risk, and compliance support.
+          </p>
+        </div>
+        <form className="service-form">
+          <div className="service-grid">
+            <div className="service-field">
+              <label htmlFor="fullName">Full name</label>
+              <input id="fullName" name="fullName" type="text" placeholder="Jane Doe" />
+            </div>
+            <div className="service-field">
+              <label htmlFor="company">Company</label>
+              <input id="company" name="company" type="text" placeholder="Acme Group" />
+            </div>
+            <div className="service-field">
+              <label htmlFor="email">Work email</label>
+              <input id="email" name="email" type="email" placeholder="you@company.com" />
+            </div>
+            <div className="service-field">
+              <label htmlFor="role">Role / Title</label>
+              <input id="role" name="role" type="text" placeholder="CISO, Head of Risk, CIO..." />
+            </div>
+            <div className="service-field service-field-full">
+              <label htmlFor="focus">Primary area of focus</label>
+              <select id="focus" name="focus">
+                <option value="">Select an area</option>
+                <option value="governance">Governance &amp; Operating Model</option>
+                <option value="risk">Enterprise Risk Assessment</option>
+                <option value="compliance">Regulatory &amp; Compliance Readiness</option>
+                <option value="data">Data Protection &amp; Privacy</option>
+                <option value="other">Other / Not sure yet</option>
+              </select>
+            </div>
+            <div className="service-field service-field-full">
+              <label htmlFor="message">Briefly describe your current challenge</label>
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                placeholder="For example: we are preparing for ISO 27001 certification and need to mature our governance framework..."
+              />
+            </div>
+          </div>
+          <div className="service-consent">
+            <label>
+              <input type="checkbox" name="consent" /> I agree to be contacted by Cybereign
+              regarding this inquiry.
+            </label>
+          </div>
+          <button type="submit" className="service-submit">
+            Submit request
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+);
+
+
 const Footer = () => {
   return (
     <footer id="contact" className="footer">
@@ -568,6 +647,7 @@ const App: React.FC = () => {
       <main className="main">
         <Hero />
         <FeaturesSection />
+        <ServiceFormSection />
       </main>
 
       <Footer />
