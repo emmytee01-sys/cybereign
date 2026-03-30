@@ -34,11 +34,8 @@ const Header = () => {
   return (
     <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-bg-primary-80 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}>
       <div className="container flex justify-between items-center">
-        <a href="#" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Shield className="text-white w-6 h-6" />
-          </div>
-          <span className="text-2xl font-bold tracking-tight text-white">CYBEREIGN</span>
+        <a href="#" className="flex items-center group">
+          <img src="/images/logo.png" alt="CYBEREIGN" className="h-10 md:h-12 w-auto object-contain" />
         </a>
 
         {/* Desktop Nav */}
@@ -453,11 +450,8 @@ const Footer = () => {
       <div className="container">
         <div className="grid lg:grid-cols-4 gap-16 mb-20">
           <div className="lg:col-span-2">
-            <a href="#" className="flex items-center gap-2 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-lg flex items-center justify-center">
-                <Shield className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-bold text-white">CYBEREIGN</span>
+            <a href="#" className="flex items-center mb-8">
+              <img src="/images/logo.png" alt="CYBEREIGN" className="h-12 md:h-14 w-auto object-contain" />
             </a>
             <p className="text-lg text-text-secondary mb-8 max-w-sm">
               Helping organizations build systems that support accountability, manage risk, and protect trust.
