@@ -60,14 +60,8 @@ a {
   transition: var(--transition-smooth);
 }
 
-ul {
-  list-style: none;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
 
 /* Layout Utilities */
 .container {
@@ -98,11 +92,16 @@ img {
 .gap-20 { gap: 80px; }
 
 @media (min-width: 768px) {
+  .md\:flex { display: flex; }
+  .md\:grid { display: grid; }
+  .md\:flex-row { flex-direction: row; }
   .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
   .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .md\:hidden { display: none; }
 }
 
 @media (min-width: 1024px) {
+  .lg\:grid { display: grid; }
   .lg\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
   .lg\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
   .lg\:col-span-2 { grid-column: span 2 / span 2; }
@@ -124,6 +123,7 @@ img {
 .p-24 { padding: 96px; }
 
 .px-4 { padding-left: 16px; padding-right: 16px; }
+.px-5 { padding-left: 20px; padding-right: 20px; }
 .px-6 { padding-left: 24px; padding-right: 24px; }
 .px-8 { padding-left: 32px; padding-right: 32px; }
 .px-10 { padding-left: 40px; padding-right: 40px; }
@@ -153,15 +153,15 @@ img {
 .mb-20 { margin-bottom: 80px; }
 
 /* Typography */
-.text-sm { font-size: 14px; }
-.text-lg { font-size: 18px; }
-.text-xl { font-size: 20px; }
-.text-2xl { font-size: 24px; }
-.text-3xl { font-size: 30px; }
-.text-4xl { font-size: 36px; }
-.text-5xl { font-size: 48px; }
-.text-6xl { font-size: 60px; }
-.text-7xl { font-size: 72px; }
+.text-sm { font-size: 0.875rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
+.text-5xl { font-size: 3rem; }
+.text-6xl { font-size: 3.75rem; }
+.text-7xl { font-size: 4.5rem; }
 
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
