@@ -16,7 +16,8 @@ import {
   Eye, 
   TrendingUp,
   Menu,
-  X
+  X,
+  Phone
 } from 'lucide-react';
 
 const Header = () => {
@@ -487,11 +488,14 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold text-white mb-8">Contact</h4>
             <div className="space-y-4">
-              <a href="mailto:cybereignconsulting@gmail.com" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
-                <Mail className="w-5 h-5 text-accent-primary" /> cybereignconsulting@gmail.com
+              <a href="tel:+2349063787767" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
+                <Phone className="w-5 h-5 text-accent-primary" /> +234 906 378 7767
               </a>
-              <a href="#" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
-                <Globe className="w-5 h-5 text-accent-secondary" /> cybereignconsulting
+              <a href="mailto:cybereignconsulting@gmail.com" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
+                <Mail className="w-5 h-5 text-accent-secondary" /> cybereignconsulting@gmail.com
+              </a>
+              <a href="https://linkedin.com/company/cybereignconsulting" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
+                <Linkedin className="w-5 h-5 text-accent-primary" /> cybereignconsulting
               </a>
             </div>
           </div>
