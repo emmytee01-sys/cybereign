@@ -193,81 +193,62 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-bg-primary/95 backdrop-blur-3xl">
+      {/* Centered Modal Container */}
       <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
-        onClick={onClose}
-        className="fixed inset-0 bg-bg-primary/95 backdrop-blur-2xl"
-      />
-      
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative w-full max-w-[380px] z-10"
+        className="w-full max-w-[420px] glass-card bg-bg-secondary/40 border-glass-border p-10 sm:p-14 rounded-[40px] shadow-2xl relative"
       >
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-accent-primary to-accent-secondary rounded-[24px] opacity-20 blur-sm"></div>
+        <button onClick={onClose} className="absolute top-8 right-8 text-text-muted hover:text-white transition-colors">
+          <X className="w-6 h-6" />
+        </button>
         
-        <div className="relative bg-bg-secondary p-8 sm:p-10 rounded-[24px] border border-white/10 shadow-2xl">
-          <button onClick={onClose} className="absolute top-6 right-6 text-text-muted hover:text-white transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-          
-          <div className="text-center mb-10">
-            <div className="w-12 h-12 bg-accent-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-accent-primary/20">
-              <Shield className="w-6 h-6 text-accent-primary" />
-            </div>
-            <h2 className="text-xl font-bold text-white tracking-tight">System Login</h2>
-            <p className="text-[10px] text-accent-primary uppercase tracking-[0.2em] font-black opacity-80 mt-1">Management Portal</p>
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-accent-primary-10 rounded-full border border-accent-primary-20 mb-6">
+            <Lock className="w-8 h-8 text-accent-primary" />
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-5">
-             <div className="space-y-1">
-               <div className="relative">
-                 <div className="absolute left-4 top-0 h-full flex items-center pointer-events-none">
-                   <User className="w-4 h-4 text-text-muted" />
-                 </div>
-                 <input 
-                   type="text" 
-                   value={username} 
-                   onChange={e => setUsername(e.target.value)} 
-                   required 
-                   className="w-full bg-bg-primary/50 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/40" 
-                   placeholder="Username" 
-                 />
-               </div>
-             </div>
-             
-             <div className="space-y-1">
-               <div className="relative">
-                 <div className="absolute left-4 top-0 h-full flex items-center pointer-events-none">
-                   <Key className="w-4 h-4 text-text-muted" />
-                 </div>
-                 <input 
-                   type="password" 
-                   value={password} 
-                   onChange={e => setPassword(e.target.value)} 
-                   required 
-                   className="w-full bg-bg-primary/50 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 text-sm text-white focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/40" 
-                   placeholder="Password" 
-                 />
-               </div>
-             </div>
-             
-             <button 
-               type="submit" 
-               disabled={isLoggingIn} 
-               className="btn btn-primary w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all mt-4"
-             >
-               {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" /> : 'Enter Dashboard'}
-             </button>
-             
-             <div className="pt-6 flex justify-center gap-4 items-center">
-                <div className="h-px w-8 bg-white/5"></div>
-                <p className="text-[9px] text-text-muted uppercase tracking-[0.3em] font-medium">CYBEREIGN • SECURE</p>
-                <div className="h-px w-8 bg-white/5"></div>
-             </div>
-          </form>
+          <h2 className="text-3xl font-bold text-white tracking-tight mb-2">CMS Login</h2>
+          <p className="text-sm text-text-secondary">Enter your credentials to access the portal.</p>
         </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-8">
+           <div className="space-y-3">
+             <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-primary pl-1">Username</label>
+             <input 
+               type="text" 
+               value={username} 
+               onChange={e => setUsername(e.target.value)} 
+               required 
+               className="w-full bg-white/5 border border-glass-border rounded-2xl py-4 px-6 text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/30" 
+               placeholder="Enter admin username" 
+             />
+           </div>
+           
+           <div className="space-y-3">
+             <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-secondary pl-1">Password</label>
+             <input 
+               type="password" 
+               value={password} 
+               onChange={e => setPassword(e.target.value)} 
+               required 
+               className="w-full bg-white/5 border border-glass-border rounded-2xl py-4 px-6 text-white focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/30" 
+               placeholder="Enter admin password" 
+             />
+           </div>
+           
+           <button 
+             type="submit" 
+             disabled={isLoggingIn} 
+             className="btn btn-primary w-full h-16 rounded-2xl text-lg font-bold shadow-xl hover:shadow-2xl transition-all mt-4"
+           >
+             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : 'Sign In'}
+           </button>
+           
+           <p className="text-center text-[10px] text-text-muted uppercase tracking-widest pt-4">
+             CYBEREIGN Management Portal • Secure Session
+           </p>
+        </form>
       </motion.div>
     </div>
   );
