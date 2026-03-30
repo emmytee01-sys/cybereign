@@ -377,10 +377,16 @@ const Hero = () => {
               <a href="#consultation" className="btn btn-primary px-10 h-16 text-lg">{content.hero.ctaText}</a>
               <a href="#services" className="btn btn-secondary px-10 h-16 text-lg">{content.hero.secondaryText} <ChevronRight className="w-5 h-5" /></a>
             </div>
-            <div className="mt-12 flex gap-8 pt-12 border-t border-white/5 text-sm text-text-muted">
-               <div><p className="font-bold uppercase tracking-widest text-accent-primary">Nigeria</p>Lagos State</div>
-               <div className="w-px h-10 bg-white/5"></div>
-               <div><p className="font-bold uppercase tracking-widest text-accent-secondary">USA</p>Duncanville, TX</div>
+            <div className="mt-12 flex items-center gap-8 border-t border-glass-border pt-12">
+              <div>
+                <p className="text-sm text-text-muted mb-2 uppercase tracking-widest font-bold">Nigeria Presence</p>
+                <div className="flex items-center gap-2 text-white font-medium"><MapPin className="w-4 h-4 text-accent-primary" /> Lagos, Nigeria</div>
+              </div>
+              <div className="h-10 w-px bg-glass-border"></div>
+              <div>
+                <p className="text-sm text-text-muted mb-2 uppercase tracking-widest font-bold">United States Presence</p>
+                <div className="flex items-center gap-2 text-white font-medium"><Globe className="w-4 h-4 text-accent-secondary" /> Duncanville, TX</div>
+              </div>
             </div>
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative">
@@ -452,12 +458,19 @@ const Footer = () => {
             <p className="text-lg text-text-secondary mb-8 max-w-sm">{content.footer.description}</p>
             <div className="flex gap-4"><a href={content.footer.linkedin} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary transition-all"><Linkedin className="w-5 h-5" /></a></div>
           </div>
-          <div><h4 className="text-lg font-bold text-white mb-8">Nigeria Area</h4><p className="text-text-secondary">Lagos Presence</p></div>
           <div>
-            <h4 className="text-lg font-bold text-white mb-8">Contact System</h4>
+            <h4 className="text-lg font-bold text-white mb-8">Locations</h4>
+            <div className="space-y-6">
+              <div><p className="text-accent-primary font-bold text-sm uppercase mb-2">Head office</p><p className="text-text-secondary">Lagos, Nigeria</p></div>
+              <div><p className="text-accent-secondary font-bold text-sm uppercase mb-2">Remote Presence</p><p className="text-text-secondary">Duncanville, Texas, US</p></div>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-lg font-bold text-white mb-8">Contact</h4>
             <div className="space-y-4">
-              <a href={`tel:${content.footer.phone.replace(/\s+/g,'')}`} className="flex items-center gap-3 text-text-secondary hover:text-white"><Phone className="w-4 h-4 text-accent-primary" /> {content.footer.phone}</a>
-              <a href={`mailto:${content.footer.email}`} className="flex items-center gap-3 text-text-secondary hover:text-white"><Mail className="w-4 h-4 text-accent-secondary" /> {content.footer.email}</a>
+              <a href={`tel:${content.footer.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Phone className="w-5 h-5 text-accent-primary" /> {content.footer.phone}</a>
+              <a href={`mailto:${content.footer.email}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Mail className="w-5 h-5 text-accent-secondary" /> {content.footer.email}</a>
+              <a href={content.footer.linkedin} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Linkedin className="w-5 h-5 text-accent-primary" /> cybereignconsulting</a>
             </div>
           </div>
         </div>
