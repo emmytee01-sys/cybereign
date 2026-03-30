@@ -197,27 +197,27 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[440px] bg-white p-12 sm:p-16 rounded-[40px] shadow-2xl relative flex flex-col items-center"
+        className="w-full max-w-[360px] bg-white p-10 sm:p-12 rounded-[32px] shadow-2xl relative flex flex-col items-center"
       >
-        <button onClick={onClose} className="absolute top-8 right-8 text-slate-300 hover:text-slate-600 transition-colors">
-          <X className="w-6 h-6" />
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-300 hover:text-slate-600 transition-colors">
+          <X className="w-5 h-5" />
         </button>
         
-        <div className="text-center mb-10 w-full">
-          <img src="/images/logo.png" alt="CYBEREIGN" className="h-12 w-auto mx-auto mb-8 grayscale brightness-0 opacity-80" />
+        <div className="text-center mb-8 w-full">
+          <img src="/images/logo.png" alt="CYBEREIGN" className="h-10 w-auto mx-auto mb-6 grayscale brightness-0 opacity-80" />
           
-          <h2 className="text-2xl font-black text-[#ff0000] mb-3 leading-tight">Administrator Login!</h2>
-          <p className="text-[#0a2351] font-medium text-lg">Enter your details to login.</p>
+          <h2 className="text-xl font-black text-[#ff0000] mb-2 leading-tight">Administrator Login!</h2>
+          <p className="text-[#0a2351] font-semibold text-base opacity-70">Enter your details to login.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
            <div className="w-full">
              <input 
                type="text" 
                value={username} 
                onChange={e => setUsername(e.target.value)} 
                required 
-               className="w-full bg-[#eef4ff] border border-[#cfdfef] rounded-lg py-4 px-6 text-[#0a2351] text-base focus:border-[#4a90e2] outline-none transition-all placeholder:text-slate-400" 
+               className="w-full bg-transparent border-b-2 border-slate-100 py-3 px-1 text-[#0a2351] text-sm focus:border-[#ff0000] outline-none transition-all placeholder:text-slate-300" 
                placeholder="Username" 
              />
            </div>
@@ -226,9 +226,9 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
              <input 
                type="password" 
                value={password} 
-               onChange={e => setPassword(e.target.value)} 
+               onChange={e => setUsername(e.target.value)} 
                required 
-               className="w-full bg-[#eef4ff] border border-[#cfdfef] rounded-lg py-4 px-6 text-[#0a2351] text-base focus:border-[#4a90e2] outline-none transition-all placeholder:text-slate-400" 
+               className="w-full bg-transparent border-b-2 border-slate-100 py-3 px-1 text-[#0a2351] text-sm focus:border-[#ff0000] outline-none transition-all placeholder:text-slate-300" 
                placeholder="Password" 
              />
            </div>
@@ -236,9 +236,9 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
            <button 
              type="submit" 
              disabled={isLoggingIn} 
-             className="w-full bg-[#ff0000] text-white h-16 rounded-xl text-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all mt-6 shadow-md"
+             className="w-full bg-[#ff0000] text-white h-14 rounded-xl text-lg font-bold hover:brightness-110 active:scale-[0.98] transition-all mt-6 shadow-md"
            >
-             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" /> : 'Login'}
+             {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mx-auto text-white" /> : 'Login'}
            </button>
         </form>
       </motion.div>
