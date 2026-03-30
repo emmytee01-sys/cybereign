@@ -75,18 +75,21 @@
     "items": [
       {
         "title": "The Future of Privacy in Fintech",
-        "type": "Data Protection",
-        "icon": "Eye"
+        "category": "Data Protection",
+        "image": "/images/data_protection_visualization.png",
+        "date": "March 15, 2026"
       },
       {
         "title": "Navigating African Compliance Landscapes",
-        "type": "Governance",
-        "icon": "Globe"
+        "category": "Governance",
+        "image": "/images/hero_abstract_governance.png",
+        "date": "February 28, 2026"
       },
       {
         "title": "Building Accountability in Operations",
-        "type": "Risk Management",
-        "icon": "TrendingUp"
+        "category": "Risk Management",
+        "image": "/images/data_protection_visualization.png",
+        "date": "February 10, 2026"
       }
     ]
   },
