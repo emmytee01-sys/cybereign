@@ -109,17 +109,7 @@ const CMSControlPanel = () => {
   const { isEditMode, setIsEditMode, saveChanges, resetChanges, content, updateContent } = useCMS();
   const [activeTab, setActiveTab] = useState<'text' | 'colors' | 'layout'>('text');
 
-  if (!isEditMode) return (
-    <button 
-      onClick={() => {
-        const pass = prompt('Enter Admin Password:');
-        if (pass === 'cybereign2026') setIsEditMode(true);
-      }}
-      className="fixed bottom-8 right-8 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all z-[100] group"
-    >
-      <Settings className="w-5 h-5 text-accent-primary group-hover:rotate-90 transition-transform" />
-    </button>
-  );
+  if (!isEditMode) return null;
 
   return (
     <motion.div 
@@ -555,7 +545,19 @@ const Footer = () => {
         </div>
         <div className="pt-12 border-t border-glass-border flex flex-col md:flex-row justify-between items-center gap-8">
           <p className="text-text-muted text-sm">© 2026 CYBEREIGN Consulting Limited. All rights reserved.</p>
-          <div className="flex gap-8"><a href="#" className="text-sm text-text-muted hover:text-white">Privacy Policy</a><a href="#" className="text-sm text-text-muted hover:text-white">Terms of Service</a></div>
+          <div className="flex gap-8">
+            <a href="#" className="text-sm text-text-muted hover:text-white">Privacy Policy</a>
+            <a href="#" className="text-sm text-text-muted hover:text-white">Terms of Service</a>
+            <button 
+              onClick={() => {
+                const pass = prompt('Enter Admin Password:');
+                if (pass === 'cybereign2026') setIsEditMode(true);
+              }}
+              className="text-sm text-accent-primary/50 hover:text-accent-primary flex items-center gap-2 border-l border-glass-border pl-8 transition-colors"
+            >
+              <Lock className="w-3 h-3" /> Admin Login
+            </button>
+          </div>
         </div>
       </div>
     </footer>
