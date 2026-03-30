@@ -18,63 +18,75 @@ import {
   RefreshCcw,
   Plus,
   Trash2,
-  Loader2
+  Loader2,
+  LayoutDashboard,
+  Type,
+  ImageIcon,
+  Grid,
+  FileText,
+  Palette,
+  Eye,
+  Settings
 } from 'lucide-react';
 
 import contentData from './content.json';
 
 // --- PHP API SETTINGS ---
-const API_URL = '/backend/api/api.php'; // Update with your actual hosting path
+const API_URL = '/backend/api/api.php';
 
 // --- CMS CONTEXT & LOGIC ---
 
-type CMSContent = typeof contentData;
+const initialContent = contentData;
 
-const CMSContext = createContext<{
-  content: CMSContent;
+interface CMSContextType {
+  content: typeof initialContent; 
   updateContent: (path: string, value: any) => void;
-  isEditMode: boolean;
-  setIsEditMode: (v: boolean) => void;
-  saveChanges: () => Promise<void>;
-  resetChanges: () => void;
   isLoggedIn: boolean;
   login: (u: string, p: string) => Promise<boolean>;
   logout: () => void;
+  saveChanges: () => Promise<void>;
+  resetChanges: () => void;
   isLoading: boolean;
-} | null>(null);
+  currentPage: 'home' | 'dashboard';
+  setCurrentPage: (page: 'home' | 'dashboard') => void;
+}
+
+const CMSContext = createContext<CMSContextType | null>(null);
+
+const useCMS = () => {
+  const context = useContext(CMSContext);
+  if (!context) throw new Error('useCMS must be used within a CMSProvider');
+  return context;
+};
 
 const CMSProvider = ({ children }: { children: React.ReactNode }) => {
-  const [content, setContent] = useState<CMSContent>(contentData);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [content, setContent] = useState(initialContent);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<'home' | 'dashboard'>('home');
 
   useEffect(() => {
-    // 1. Check if user was previously logged in (via localStorage token)
-    const token = localStorage.getItem('cybereign_cms_token');
-    if (token) setIsLoggedIn(true);
-
-    // 2. Fetch initial content from PHP API
-    fetch(`${API_URL}?action=get_content`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && !data.status) { // Check if it returned the config object
-          setContent(data);
-        } else {
-           // Fallback if DB empty or fail
-           const savedDraft = localStorage.getItem('cybereign_cms_draft');
-           if (savedDraft) setContent(JSON.parse(savedDraft));
-        }
-      })
-      .catch(err => {
-        console.error('PHP API Fetch failed, using local content:', err);
-        const savedDraft = localStorage.getItem('cybereign_cms_draft');
-        if (savedDraft) setContent(JSON.parse(savedDraft));
-      })
-      .finally(() => setIsLoading(false));
+    fetchContent();
+    const token = localStorage.getItem('cybereign_token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+    setIsLoading(false);
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const fetchContent = async () => {
+    try {
+      const res = await fetch(`${API_URL}?action=get_content`);
+      const data = await res.json();
+      if (data.status === 'success') {
+        setContent(data.content);
+      }
+    } catch (e) {
+      console.error('Failed to load content from database, using local fallback.', e);
+    }
+  };
+
+  const login = async (username: string, password: string) => {
     try {
       const res = await fetch(`${API_URL}?action=login`, {
         method: 'POST',
@@ -83,73 +95,64 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        localStorage.setItem('cybereign_cms_token', data.token);
+        localStorage.setItem('cybereign_token', data.token);
         setIsLoggedIn(true);
+        setCurrentPage('dashboard');
         return true;
-      } else {
-        alert(data.message);
-        return false;
       }
-    } catch (err) {
-      console.error('Login error:', err);
-      // Mock login for offline testing (password: cybereign2026)
-      if (password === 'cybereign2026') { 
-        setIsLoggedIn(true); 
-        return true; 
-      }
+      return false;
+    } catch (e) {
+      console.error('Login error:', e);
       return false;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('cybereign_cms_token');
+    localStorage.removeItem('cybereign_token');
     setIsLoggedIn(false);
-    setIsEditMode(false);
+    setCurrentPage('home');
   };
 
   const updateContent = (path: string, value: any) => {
-    const newContent = JSON.parse(JSON.stringify(content));
-    const parts = path.split('.');
-    let target = newContent;
-    for (let i = 0; i < parts.length - 1; i++) {
-      target = target[parts[i]];
-    }
-    target[parts[parts.length - 1]] = value;
-    setContent(newContent);
-    localStorage.setItem('cybereign_cms_draft', JSON.stringify(newContent));
+    setContent(prev => {
+      const newContent = JSON.parse(JSON.stringify(prev));
+      const keys = path.split('.');
+      let current: any = newContent;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+      return newContent;
+    });
   };
 
   const saveChanges = async () => {
     try {
-      const res = await fetch(`${API_URL}?action=update_content`, {
+      const token = localStorage.getItem('cybereign_token');
+      const res = await fetch(`${API_URL}?action=save_content`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ content })
       });
       const data = await res.json();
       if (data.status === 'success') {
-        alert('Site content updated successfully in database!');
-        localStorage.removeItem('cybereign_cms_draft');
-      } else {
-        alert('Error: ' + data.message);
+        alert('Changes pushed to production!');
       }
-    } catch (err) {
-      console.error('Update content error:', err);
-      alert('Network error while saving to database. Saving locally as backup.');
+    } catch (e) {
+      alert('Failed to save changes. Redirecting to login.');
+      logout();
     }
   };
 
   const resetChanges = () => {
-    if (confirm('Reset all draft changes?')) {
-      setContent(contentData);
-      localStorage.removeItem('cybereign_cms_draft');
+    if (confirm('Revert all unsaved changes to database version?')) {
+      fetchContent();
     }
   };
 
   return (
-    <CMSContext.Provider value={{ content, updateContent, isEditMode, setIsEditMode, saveChanges, resetChanges, isLoggedIn, login, logout, isLoading }}>
+    <CMSContext.Provider value={{ content, updateContent, isLoggedIn, login, logout, saveChanges, resetChanges, isLoading, currentPage, setCurrentPage }}>
       <div 
-        className={isLoggedIn && isEditMode ? 'pt-16' : ''}
         style={{ 
           '--accent-primary': content.colors.accentPrimary, 
           '--accent-secondary': content.colors.accentSecondary 
@@ -161,55 +164,260 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// --- INLINE EDIT COMPONENTS ---
+// --- CMS DASHBOARD PAGE ---
 
-const EditableText = ({ value, onChange, className }: { value: string, onChange: (v: string) => void, className?: string }) => {
-  const { isEditMode } = useCMS();
-  if (!isEditMode) return <span className={className}>{value}</span>;
+const Dashboard = () => {
+  const { content, updateContent, logout, saveChanges, resetChanges, setCurrentPage } = useCMS();
+  const [activeTab, setActiveTab] = useState('hero');
+
+  const menu = [
+    { id: 'hero', label: 'Hero Section', icon: LayoutDashboard },
+    { id: 'about', label: 'About Us', icon: Type },
+    { id: 'services', label: 'Services', icon: Grid },
+    { id: 'industries', label: 'Industries', icon: Eye },
+    { id: 'insights', label: 'Insights & Articles', icon: FileText },
+    { id: 'footer', label: 'Footer & Links', icon: Settings },
+    { id: 'colors', label: 'Site Branding', icon: Palette },
+  ];
+
   return (
+    <div className="flex h-screen bg-bg-primary overflow-hidden font-jakarta">
+       {/* Sidebar */}
+       <div className="w-80 h-full border-r border-glass-border flex flex-col pt-8 bg-bg-secondary/20">
+          <div className="px-8 mb-12 flex items-center justify-between">
+            <img src="/images/logo.png" alt="Logo" className="h-8 w-auto" />
+            <button onClick={() => setCurrentPage('home')} className="p-2 text-text-muted hover:text-white transition-colors bg-white/5 rounded-lg">
+              <ArrowRight className="w-4 h-4 rotate-180" />
+            </button>
+          </div>
+
+          <nav className="flex-1 space-y-2 px-4">
+            {menu.map((item) => (
+              <button 
+                key={item.id} 
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center gap-3 px-6 h-14 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === item.id ? 'bg-accent-primary text-bg-primary shadow-xl' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+              >
+                <item.icon className="w-5 h-5" /> {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-6 mt-auto border-t border-glass-border">
+             <button onClick={logout} className="w-full flex items-center justify-center gap-2 h-12 text-red-500 font-bold hover:bg-red-500/10 rounded-xl transition-all">
+               <LogOut className="w-5 h-5" /> Log Out
+             </button>
+          </div>
+       </div>
+
+       {/* Main Content Area */}
+       <div className="flex-1 overflow-y-auto bg-[#0a0f1d] pb-24">
+          <header className="h-20 border-b border-glass-border flex items-center px-12 justify-between sticky top-0 bg-[#0a0f1d]/90 backdrop-blur-xl z-20">
+             <h1 className="text-xl font-black uppercase tracking-widest text-white">{activeTab.replace('_', ' ')} Management</h1>
+             <div className="flex gap-4">
+                <button onClick={resetChanges} className="flex items-center gap-2 px-6 h-12 bg-white/5 text-text-muted rounded-xl text-sm font-bold hover:text-white transition-all"><RefreshCcw className="w-4 h-4" /> Reset</button>
+                <button onClick={saveChanges} className="flex items-center gap-2 px-8 h-12 bg-accent-primary text-bg-primary rounded-xl text-sm font-bold shadow-xl hover:scale-105 transition-all"><Save className="w-4 h-4" /> Push Updates</button>
+             </div>
+          </header>
+
+          <div className="p-12 max-w-5xl">
+             {activeTab === 'hero' && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <InputGroup title="Hero Media">
+                     <ImageField label="Background Visualization" value={content.hero.image} onChange={v => updateContent('hero.image', v)} />
+                  </InputGroup>
+                  <InputGroup title="Main Content">
+                     <TextField label="Tagline Badge" value={content.hero.tagline} onChange={v => updateContent('hero.tagline', v)} />
+                     <TextAreaField label="Main Headline" value={content.hero.title} onChange={v => updateContent('hero.title', v)} />
+                     <TextAreaField label="Subtext Description" value={content.hero.subtitle} onChange={v => updateContent('hero.subtitle', v)} />
+                  </InputGroup>
+                  <InputGroup title="Call to Actions">
+                     <div className="grid grid-cols-2 gap-6">
+                        <TextField label="Primary Button" value={content.hero.ctaText} onChange={v => updateContent('hero.ctaText', v)} />
+                        <TextField label="Secondary Link" value={content.hero.secondaryText} onChange={v => updateContent('hero.secondaryText', v)} />
+                     </div>
+                  </InputGroup>
+               </div>
+             )}
+
+             {activeTab === 'about' && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <InputGroup title="Story & Visuals">
+                     <ImageField label="Company Imagery" value={content.about.image} onChange={v => updateContent('about.image', v)} />
+                     <TextField label="Tagline" value={content.about.tagline} onChange={v => updateContent('about.tagline', v)} />
+                  </InputGroup>
+                  <InputGroup title="Mission Content">
+                     <TextField label="Section Title" value={content.about.title} onChange={v => updateContent('about.title', v)} />
+                     <TextAreaField label="Intro Paragraph" value={content.about.subtitle} onChange={v => updateContent('about.subtitle', v)} />
+                  </InputGroup>
+               </div>
+             )}
+
+             {activeTab === 'services' && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <InputGroup title="Header">
+                     <TextField label="Tagline" value={content.services.tagline} onChange={v => updateContent('services.tagline', v)} />
+                     <TextField label="Title" value={content.services.title} onChange={v => updateContent('services.title', v)} />
+                  </InputGroup>
+                  <div className="grid gap-6">
+                    {content.services.items.map((s, i) => (
+                      <div key={i} className="p-8 bg-white/5 border border-glass-border rounded-3xl relative group">
+                        <p className="text-[10px] font-black uppercase text-accent-primary mb-4">Service Layer {i + 1}</p>
+                        <TextField label="Title" value={s.title} onChange={v => {
+                           const n = [...content.services.items]; n[i].title = v; updateContent('services.items', n);
+                        }} />
+                        <div className="mt-4">
+                           <TextAreaField label="Description" value={s.description} onChange={v => {
+                              const n = [...content.services.items]; n[i].description = v; updateContent('services.items', n);
+                           }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+             )}
+
+             {activeTab === 'insights' && (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="flex justify-between items-center mb-8">
+                     <h2 className="text-xl font-bold flex items-center gap-2"><FileText className="w-5 h-5 text-accent-primary" /> Manage Articles</h2>
+                     <button 
+                       onClick={() => updateContent('insights.items', [{ title: "New Article Title", category: "Governance", date: new Date().toLocaleDateString(), image: content.about.image }, ...content.insights.items])} 
+                       className="flex items-center gap-2 px-6 h-12 bg-accent-primary/10 border border-accent-primary/20 text-accent-primary rounded-xl text-sm font-bold hover:bg-accent-primary hover:text-bg-primary transition-all"
+                     >
+                        <Plus className="w-4 h-4" /> Create New Insight
+                     </button>
+                  </div>
+                  <div className="grid gap-8">
+                    {content.insights.items.map((item, i) => (
+                       <div key={i} className="p-8 bg-white/5 border border-glass-border rounded-3xl relative group hover:border-accent-primary/30 transition-all">
+                          <button 
+                            onClick={() => { const n = [...content.insights.items]; n.splice(i, 1); updateContent('insights.items', n); }}
+                            className="absolute top-8 right-8 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          ><Trash2 className="w-5 h-5" /></button>
+                          
+                          <div className="grid md:grid-cols-3 gap-8">
+                             <div className="md:col-span-1">
+                                <ImageField label="Article Cover" value={item.image} onChange={v => { const n = [...content.insights.items]; n[i].image = v; updateContent('insights.items', n); }} />
+                             </div>
+                             <div className="md:col-span-2 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                   <TextField label="Category" value={item.category} onChange={v => { const n = [...content.insights.items]; n[i].category = v; updateContent('insights.items', n); }} />
+                                   <TextField label="Date" value={item.date} onChange={v => { const n = [...content.insights.items]; n[i].date = v; updateContent('insights.items', n); }} />
+                                </div>
+                                <TextAreaField label="Full Title" value={item.title} onChange={v => { const n = [...content.insights.items]; n[i].title = v; updateContent('insights.items', n); }} />
+                             </div>
+                          </div>
+                       </div>
+                    ))}
+                  </div>
+                </div>
+             )}
+
+             {activeTab === 'footer' && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <InputGroup title="Contact Info">
+                     <TextField label="Email" value={content.footer.email} onChange={v => updateContent('footer.email', v)} />
+                     <TextField label="Phone" value={content.footer.phone} onChange={v => updateContent('footer.phone', v)} />
+                  </InputGroup>
+                  <InputGroup title="Brand Blurb">
+                     <TextAreaField label="Footer Description" value={content.footer.description} onChange={v => updateContent('footer.description', v)} />
+                  </InputGroup>
+               </div>
+             )}
+
+             {activeTab === 'colors' && (
+               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <InputGroup title="Visual Identity">
+                     <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                           <label className="text-xs font-black uppercase tracking-widest text-text-muted">Primary Accent</label>
+                           <div className="flex gap-4 items-center bg-white/5 p-4 rounded-xl border border-glass-border">
+                              <input type="color" value={content.colors.accentPrimary} onChange={e => updateContent('colors.accentPrimary', e.target.value)} className="w-12 h-12 bg-transparent border-none cursor-pointer" />
+                              <span className="font-mono text-white text-lg font-bold">{content.colors.accentPrimary}</span>
+                           </div>
+                        </div>
+                        <div className="space-y-4">
+                           <label className="text-xs font-black uppercase tracking-widest text-text-muted">Secondary Accent</label>
+                           <div className="flex gap-4 items-center bg-white/5 p-4 rounded-xl border border-glass-border">
+                              <input type="color" value={content.colors.accentSecondary} onChange={e => updateContent('colors.accentSecondary', e.target.value)} className="w-12 h-12 bg-transparent border-none cursor-pointer" />
+                              <span className="font-mono text-white text-lg font-bold">{content.colors.accentSecondary}</span>
+                           </div>
+                        </div>
+                     </div>
+                  </InputGroup>
+               </div>
+             )}
+          </div>
+       </div>
+    </div>
+  );
+};
+
+const InputGroup = ({ title, children }: { title: string, children: React.ReactNode }) => (
+  <div className="bg-bg-secondary/40 border border-glass-border rounded-3xl p-10 space-y-8">
+    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-accent-primary border-l-4 border-accent-primary pl-4">{title}</h3>
+    <div className="grid gap-8">{children}</div>
+  </div>
+);
+
+const TextField = ({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">{label}</label>
     <input 
       type="text" 
       value={value} 
-      onChange={(e) => onChange(e.target.value)}
-      className={`${className} bg-accent-primary/10 border-b border-accent-primary outline-none focus:bg-accent-primary/20 px-2 rounded-sm transition-all w-full`}
+      onChange={e => onChange(e.target.value)} 
+      className="w-full bg-white/5 border border-glass-border rounded-xl px-6 h-14 text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/30"
     />
-  );
-};
+  </div>
+);
 
-const EditableTextArea = ({ value, onChange, className }: { value: string, onChange: (v: string) => void, className?: string }) => {
-  const { isEditMode } = useCMS();
-  if (!isEditMode) return <p className={className}>{value}</p>;
-  return (
+const TextAreaField = ({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">{label}</label>
     <textarea 
       value={value} 
-      onChange={(e) => onChange(e.target.value)}
-      className={`${className} bg-accent-primary/10 border border-accent-primary outline-none focus:bg-accent-primary/20 p-4 rounded-xl transition-all w-full h-auto min-h-[100px]`}
+      onChange={e => onChange(e.target.value)} 
+      className="w-full bg-white/5 border border-glass-border rounded-2xl p-6 h-32 text-white focus:border-accent-primary outline-none transition-all resize-none"
     />
-  );
+  </div>
+);
+
+const ImageField = ({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) => (
+  <div className="space-y-4">
+    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">{label}</label>
+    <div className="flex gap-6 items-center">
+       <div className="w-32 h-32 rounded-2xl overflow-hidden bg-bg-primary border border-glass-border flex-shrink-0">
+          <img src={value} alt="Preview" className="w-full h-full object-cover" />
+       </div>
+       <div className="flex-1">
+          <input 
+            type="text" 
+            value={value} 
+            onChange={e => onChange(e.target.value)} 
+            placeholder="Paste global image URL..."
+            className="w-full bg-white/5 border border-glass-border rounded-xl px-6 h-12 text-xs text-text-secondary focus:border-accent-primary outline-none"
+          />
+          <p className="mt-2 text-[8px] uppercase tracking-widest text-text-muted ml-1">Asset URL mapping required for production deployment.</p>
+       </div>
+    </div>
+  </div>
+);
+
+// --- INLINE EDIT COMPONENTS (STILL USED IN PUBLIC SITE DISPLAY IF LOGGED IN) ---
+
+const EditableText = ({ value, className }: { value: string, className?: string }) => {
+  return <span className={className}>{value}</span>;
 };
 
-const EditableImage = ({ src, onChange, className, alt }: { src: string, onChange: (v: string) => void, className?: string, alt?: string }) => {
-  const { isEditMode } = useCMS();
-  return (
-    <div className="relative group">
-      <img src={src} alt={alt} className={className} />
-      {isEditMode && (
-        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[inherit]">
-          <div className="p-4 bg-bg-secondary rounded-xl border border-glass-border shadow-2xl w-[80%]">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-accent-primary mb-2 block">Change Image URL</label>
-            <input 
-              type="text" 
-              value={src} 
-              onChange={(e) => onChange(e.target.value)}
-              className="w-full bg-white/5 border border-glass-border rounded-lg p-2 text-xs text-white outline-none focus:border-accent-primary"
-              placeholder="Enter image URL..."
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+const EditableTextArea = ({ value, className }: { value: string, className?: string }) => {
+  return <p className={className}>{value}</p>;
+};
+
+const EditableImage = ({ src, className, alt }: { src: string, className?: string, alt?: string }) => {
+  return <img src={src} alt={alt} className={className} />;
+};
 
 const useCMS = () => {
   const context = useContext(CMSContext);
@@ -413,7 +621,7 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
 
       <div style={loginStyles.card}>
         <div style={loginStyles.logoWrap}>
-           <img src="/images/logo.png" alt="Logo" style={{ height: "40px", filter: "grayscale(100%) brightness(0%)" }} />
+           <img src="/images/logo.png" alt="Logo" style={{ height: "40px", filter: "invert(1) brightness(200%)" }} />
         </div>
 
         <h1 style={loginStyles.title}>Administrator Login!</h1>
@@ -482,51 +690,7 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
   );
 };
 
-// --- ADMIN TOOLBAR ---
 
-const AdminToolbar = () => {
-  const { isEditMode, setIsEditMode, saveChanges, resetChanges, logout, isLoggedIn } = useCMS();
-
-  if (!isLoggedIn) return null;
-
-  return (
-    <motion.div 
-      initial={{ y: -100 }} animate={{ y: 0 }}
-      className="fixed top-0 left-0 w-full h-16 bg-bg-secondary/90 backdrop-blur-xl border-b border-glass-border z-[3000] flex items-center px-8 justify-between shadow-2xl"
-    >
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-accent-primary" />
-          <span className="text-xs font-black uppercase tracking-widest text-white">Cybereign CMS</span>
-        </div>
-        <div className="h-6 w-px bg-glass-border"></div>
-        <button 
-          onClick={() => setIsEditMode(!isEditMode)} 
-          className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${isEditMode ? 'bg-accent-primary text-bg-primary' : 'bg-white/5 text-text-muted hover:text-white'}`}
-        >
-          {isEditMode ? 'Editing Active' : 'Enable Inline Editing'}
-        </button>
-      </div>
-
-      <div className="flex items-center gap-4">
-        {isEditMode && (
-          <>
-            <button onClick={saveChanges} className="flex items-center gap-2 px-4 py-2 bg-accent-primary/10 text-accent-primary border border-accent-primary/20 rounded-lg text-xs font-bold hover:bg-accent-primary hover:text-bg-primary transition-all">
-              <Save className="w-4 h-4" /> Save to Database
-            </button>
-            <button onClick={resetChanges} className="flex items-center gap-2 px-4 py-2 bg-white/5 text-text-muted rounded-lg text-xs font-bold hover:text-white transition-all">
-              <RefreshCcw className="w-4 h-4" /> Discard
-            </button>
-          </>
-        )}
-        <div className="h-6 w-px bg-glass-border"></div>
-        <button onClick={logout} className="flex items-center gap-2 px-4 py-2 text-text-muted hover:text-red-500 transition-colors text-xs font-bold">
-          <LogOut className="w-4 h-4" /> Logout
-        </button>
-      </div>
-    </motion.div>
-  );
-};
 
 // --- WEBSITE COMPONENTS --- (Header, Hero, About, etc. same as before but using CMS context)
 
@@ -635,55 +799,31 @@ const Hero = () => {
 };
 
 const ContentSection = () => {
-  const { content, updateContent, isEditMode } = useCMS();
-
-  const addInsight = () => {
-    const newItem = {
-      title: "New Insight Title",
-      category: "Category",
-      image: "/images/data_protection_visualization.png",
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    };
-    updateContent('insights.items', [newItem, ...content.insights.items]);
-  };
-
-  const removeInsight = (index: number) => {
-    if (confirm('Delete this insight?')) {
-      const newItems = [...content.insights.items];
-      newItems.splice(index, 1);
-      updateContent('insights.items', newItems);
-    }
-  };
+  const { content } = useCMS();
 
   return (
     <>
       <section id="about" className="section"><div className="container"><div className="grid lg:grid-cols-2 gap-20 items-center">
-        <div className="glass-card p-4 rounded-3xl group relative">
+        <div className="glass-card p-4 rounded-3xl">
           <EditableImage 
             src={content.about.image} 
-            onChange={v => updateContent('about.image', v)} 
             className="rounded-2xl w-full" 
           />
         </div>
         <div>
           <span className="text-sm font-bold text-accent-primary uppercase tracking-widest mb-6 block">
-            <EditableText value={content.about.tagline} onChange={v => updateContent('about.tagline', v)} />
+            <EditableText value={content.about.tagline} />
           </span>
           <h3 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
-             <EditableTextArea value={content.about.title} onChange={v => updateContent('about.title', v)} className="text-4xl md:text-5xl font-bold" />
+             <EditableTextArea value={content.about.title} className="text-4xl md:text-5xl font-bold" />
           </h3>
-          <EditableTextArea value={content.about.subtitle} onChange={v => updateContent('about.subtitle', v)} className="text-lg text-text-secondary mb-10 leading-relaxed" />
+          <EditableTextArea value={content.about.subtitle} className="text-lg text-text-secondary mb-10 leading-relaxed" />
           <div className="space-y-4">
             {content.about.bullets.map((b, i) => (
               <div key={i} className="flex gap-4">
                 <CheckCircle2 className="w-5 h-5 text-accent-primary flex-shrink-0" />
                 <EditableText 
                   value={b} 
-                  onChange={v => {
-                    const newBullets = [...content.about.bullets];
-                    newBullets[i] = v;
-                    updateContent('about.bullets', newBullets);
-                  }}
                   className="text-white font-medium w-full"
                 />
               </div>
@@ -695,10 +835,10 @@ const ContentSection = () => {
       <section id="services" className="section bg-bg-secondary-30"><div className="container">
         <div className="text-center mb-16">
           <span className="text-sm font-bold text-accent-primary mb-4 uppercase tracking-widest block">
-            <EditableText value={content.services.tagline} onChange={v => updateContent('services.tagline', v)} />
+            <EditableText value={content.services.tagline} />
           </span>
           <h3 className="text-4xl md:text-6xl font-bold">
-            <EditableText value={content.services.title} onChange={v => updateContent('services.title', v)} />
+            <EditableText value={content.services.title} />
           </h3>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
@@ -708,17 +848,9 @@ const ContentSection = () => {
                 <Shield className="w-full h-full text-accent-primary" />
               </div>
               <h4 className="text-2xl font-bold text-white mb-4 group-hover:text-accent-primary transition-colors">
-                 <EditableText value={s.title} onChange={v => {
-                   const newItems = [...content.services.items];
-                   newItems[i].title = v;
-                   updateContent('services.items', newItems);
-                 }} />
+                 <EditableText value={s.title} />
               </h4>
-              <EditableTextArea value={s.description} onChange={v => {
-                const newItems = [...content.services.items];
-                newItems[i].description = v;
-                updateContent('services.items', newItems);
-              }} className="text-text-secondary mb-8" />
+              <EditableTextArea value={s.description} className="text-text-secondary mb-8" />
               <a href="#consultation" className="font-bold flex items-center gap-2 group-hover:gap-4 transition-all">Request Advisory <ArrowRight className="w-5 h-5 text-accent-primary" /></a>
             </div>
           ))}
@@ -727,44 +859,17 @@ const ContentSection = () => {
 
       <section id="industries" className="section"><div className="container"><div className="glass-card p-12 md:p-20 relative overflow-hidden text-center">
         <span className="text-sm font-bold text-accent-primary mb-6 uppercase tracking-widest block">
-          <EditableText value={content.industries.tagline} onChange={v => updateContent('industries.tagline', v)} />
+          <EditableText value={content.industries.tagline} />
         </span>
         <h3 className="text-4xl md:text-5xl font-bold mb-10">
-          <EditableText value={content.industries.title} onChange={v => updateContent('industries.title', v)} />
+          <EditableText value={content.industries.title} />
         </h3>
         <div className="flex flex-wrap justify-center gap-8">
           {content.industries.items.map((ind, i) => (
             <div key={i} className="px-8 py-4 bg-white/5 border border-glass-border rounded-full hover:border-accent-primary transition-colors font-bold text-text-secondary hover:text-white group relative">
-               <EditableText 
-                 value={ind} 
-                 onChange={v => {
-                   const newItems = [...content.industries.items];
-                   newItems[i] = v;
-                   updateContent('industries.items', newItems);
-                 }} 
-               />
-               {isEditMode && (
-                 <button 
-                   onClick={() => {
-                     const newItems = [...content.industries.items];
-                     newItems.splice(i, 1);
-                     updateContent('industries.items', newItems);
-                   }}
-                   className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white p-1 shadow-lg"
-                 >
-                   <X className="w-3 h-3" />
-                 </button>
-               )}
+               <EditableText value={ind} />
             </div>
           ))}
-          {isEditMode && (
-            <button 
-              onClick={() => updateContent('industries.items', [...content.industries.items, "New Industry"])}
-              className="px-8 py-4 bg-accent-primary/10 border border-accent-primary dashed rounded-full text-accent-primary font-bold flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> Add Industry
-            </button>
-          )}
         </div>
       </div></div></section>
 
@@ -772,17 +877,12 @@ const ContentSection = () => {
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-left">
           <div className="max-w-2xl">
             <h2 className="text-sm font-bold text-accent-primary mb-4 uppercase tracking-widest">
-              <EditableText value={content.insights.tagline} onChange={v => updateContent('insights.tagline', v)} />
+              <EditableText value={content.insights.tagline} />
             </h2>
             <h3 className="text-4xl md:text-6xl font-bold">
-              <EditableText value={content.insights.title} onChange={v => updateContent('insights.title', v)} />
+              <EditableText value={content.insights.title} />
             </h3>
           </div>
-          {isEditMode && (
-             <button onClick={addInsight} className="btn btn-primary flex items-center gap-2 h-14 px-8">
-               <Plus className="w-5 h-5" /> Add New Article
-             </button>
-          )}
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {content.insights.items.map((item, i) => (
@@ -790,40 +890,18 @@ const ContentSection = () => {
               <div className="relative h-64 overflow-hidden">
                 <EditableImage 
                   src={item.image} 
-                  onChange={v => {
-                    const newItems = [...content.insights.items];
-                    newItems[i].image = v;
-                    updateContent('insights.items', newItems);
-                  }}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 px-4 py-1.5 bg-bg-primary/80 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-accent-primary border border-accent-primary/20">
-                  <EditableText value={item.category} onChange={v => {
-                    const newItems = [...content.insights.items];
-                    newItems[i].category = v;
-                    updateContent('insights.items', newItems);
-                  }} />
+                  <EditableText value={item.category} />
                 </div>
-                {isEditMode && (
-                  <button onClick={() => removeInsight(i)} className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
               </div>
               <div className="p-8">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted mb-4 font-bold">
-                  <EditableText value={item.date} onChange={v => {
-                    const newItems = [...content.insights.items];
-                    newItems[i].date = v;
-                    updateContent('insights.items', newItems);
-                  }} />
+                  <EditableText value={item.date} />
                 </p>
                 <h4 className="text-xl font-bold text-white mb-6 leading-tight group-hover:text-accent-primary transition-colors min-h-[60px]">
-                  <EditableTextArea value={item.title} onChange={v => {
-                    const newItems = [...content.insights.items];
-                    newItems[i].title = v;
-                    updateContent('insights.items', newItems);
-                  }} className="text-xl font-bold bg-transparent" />
+                  <EditableTextArea value={item.title} className="text-xl font-bold bg-transparent" />
                 </h4>
                 <a href="#" className="inline-flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-white transition-all group/link">
                   Read Full Article <ArrowRight className="w-4 h-4 text-accent-primary group-hover/link:translate-x-1 transition-transform" />
@@ -836,9 +914,9 @@ const ContentSection = () => {
 
       <section id="consultation" className="section py-32"><div className="container text-center"><div className="glass-card p-16 md:p-32 border-accent-primary-20">
         <h2 className="text-4xl md:text-7xl font-bold mb-10 leading-tight">
-          <EditableTextArea value={content.consultation.title} onChange={v => updateContent('consultation.title', v)} className="text-4xl md:text-7xl font-bold" />
+          <EditableTextArea value={content.consultation.title} className="text-4xl md:text-7xl font-bold" />
         </h2>
-        <EditableTextArea value={content.consultation.subtitle} onChange={v => updateContent('consultation.subtitle', v)} className="text-xl md:text-2xl text-text-secondary mb-16" />
+        <EditableTextArea value={content.consultation.subtitle} className="text-xl md:text-2xl text-text-secondary mb-16" />
         <div className="flex flex-col sm:flex-row justify-center gap-6">
           <button className="btn btn-primary px-12 h-16 text-xl">Consult CYBEREIGN</button>
           <a href={`mailto:${content.footer.email}`} className="btn btn-secondary px-12 h-16 text-xl"><Mail className="w-6 h-6" /> Contact Us</a>
@@ -849,7 +927,7 @@ const ContentSection = () => {
 };
 
 const Footer = () => {
-  const { content, isLoggedIn, setIsEditMode, updateContent } = useCMS();
+  const { content, isLoggedIn } = useCMS();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   return (
@@ -858,7 +936,7 @@ const Footer = () => {
         <div className="grid lg:grid-cols-4 gap-16 mb-20">
           <div className="lg:col-span-2">
             <a href="#" className="mb-8 block"><img src="/images/logo.png" alt="Logo" className="h-12 w-auto" /></a>
-            <EditableTextArea value={content.footer.description} onChange={v => updateContent('footer.description', v)} className="text-lg text-text-secondary mb-8 max-w-sm" />
+            <EditableTextArea value={content.footer.description} className="text-lg text-text-secondary mb-8 max-w-sm" />
             <div className="flex gap-4"><a href={content.footer.linkedin} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary transition-all"><Linkedin className="w-5 h-5" /></a></div>
           </div>
           <div>
@@ -873,11 +951,11 @@ const Footer = () => {
             <div className="space-y-4">
               <a href={`tel:${content.footer.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
                 <Phone className="w-5 h-5 text-accent-primary" /> 
-                <EditableText value={content.footer.phone} onChange={v => updateContent('footer.phone', v)} />
+                <EditableText value={content.footer.phone} />
               </a>
               <a href={`mailto:${content.footer.email}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
                 <Mail className="w-5 h-5 text-accent-secondary" /> 
-                <EditableText value={content.footer.email} onChange={v => updateContent('footer.email', v)} />
+                <EditableText value={content.footer.email} />
               </a>
               <a href={content.footer.linkedin} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Linkedin className="w-5 h-5 text-accent-primary" /> cybereignconsulting</a>
             </div>
@@ -901,14 +979,28 @@ const Footer = () => {
 };
 
 export default function App() {
+  const { currentPage } = useCMS();
+  
+  if (currentPage === 'dashboard') {
+    return <Dashboard />;
+  }
+
+  return (
+    <div className="bg-bg-primary text-text-primary selection-accent-primary">
+      <Header />
+      <main className="transition-all duration-500">
+        <Hero />
+        <ContentSection />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export function AppWrapper() {
   return (
     <CMSProvider>
-       <div className="bg-bg-primary text-text-primary selection-accent-primary">
-          <AdminToolbar />
-          <Header />
-          <main className="transition-all duration-500"><Hero /><ContentSection /></main>
-          <Footer />
-       </div>
+       <App />
     </CMSProvider>
   );
 }
