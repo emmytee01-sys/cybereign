@@ -178,70 +178,263 @@ const useCMS = () => {
 
 const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const { login } = useCMS();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [focused, setFocused] = useState<"username" | "password" | null>(null);
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggingIn(true);
+    setError("");
+
+    if (!username || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setIsLoading(true);
     const success = await login(username, password);
-    setIsLoggingIn(false);
-    if (success) onClose();
+    setIsLoading(false);
+    
+    if (success) {
+      onClose();
+    } else {
+      setError("Invalid credentials. Please try again.");
+    }
+  };
+
+  const loginStyles: Record<string, React.CSSProperties> = {
+    root: {
+      position: 'fixed' as const,
+      inset: 0,
+      zIndex: 2000,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "rgba(245, 246, 250, 0.95)", // Slightly translucent to see background blur
+      backdropFilter: "blur(20px)",
+      overflow: "hidden",
+      fontFamily: "'DM Sans', sans-serif",
+    },
+    bgCircle1: {
+      position: "absolute",
+      top: "-120px",
+      right: "-120px",
+      width: "420px",
+      height: "420px",
+      borderRadius: "50%",
+      background: "radial-gradient(circle, rgba(0,242,255,0.15) 0%, transparent 70%)",
+      pointerEvents: "none",
+    },
+    bgCircle2: {
+      position: "absolute",
+      bottom: "-100px",
+      left: "-100px",
+      width: "340px",
+      height: "340px",
+      borderRadius: "50%",
+      background: "radial-gradient(circle, rgba(112,0,255,0.10) 0%, transparent 70%)",
+      pointerEvents: "none",
+    },
+    card: {
+      background: "#ffffff",
+      borderRadius: "20px",
+      padding: "52px 44px 44px",
+      width: "100%",
+      maxWidth: "420px",
+      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 60px -10px rgba(0,0,0,0.12)",
+      animation: "floatIn 0.55s cubic-bezier(0.22,1,0.36,1) both",
+      position: "relative",
+      zIndex: 1,
+    },
+    logoWrap: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: "28px",
+    },
+    title: {
+      fontFamily: "'DM Sans', sans-serif",
+      fontWeight: "700",
+      fontSize: "24px",
+      color: "#0a2351",
+      textAlign: "center",
+      marginBottom: "8px",
+      letterSpacing: "-0.3px",
+    },
+    subtitle: {
+      fontSize: "15px",
+      color: "#5a6278",
+      textAlign: "center",
+      marginBottom: "32px",
+      fontWeight: "400",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "14px",
+    },
+    inputWrap: {
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      background: "#f0f3fa",
+      border: "1.5px solid transparent",
+      borderRadius: "12px",
+      padding: "0 16px",
+      height: "52px",
+      transition: "all 0.2s",
+    },
+    inputWrapFocused: {
+      borderColor: "var(--accent-primary)",
+      boxShadow: "0 0 0 3px rgba(0,242,255,0.10)",
+      background: "#fff",
+    },
+    inputIcon: {
+      display: "flex",
+      alignItems: "center",
+      flexShrink: 0,
+    },
+    input: {
+      flex: 1,
+      border: "none",
+      background: "transparent",
+      fontSize: "15px",
+      color: "#1e2340",
+      fontFamily: "'DM Sans', sans-serif",
+      fontWeight: "500",
+      outline: "none",
+    },
+    forgotWrap: {
+      textAlign: "right" as const,
+      marginTop: "-4px",
+    },
+    forgot: {
+      fontSize: "13px",
+      color: "var(--accent-primary)",
+      textDecoration: "none",
+      fontWeight: "500",
+      opacity: 0.85,
+    },
+    error: {
+      fontSize: "13px",
+      color: "#ff0033",
+      textAlign: "center" as const,
+      background: "rgba(255,0,51,0.06)",
+      borderRadius: "8px",
+      padding: "8px 12px",
+    },
+    btn: {
+      marginTop: "8px",
+      height: "52px",
+      borderRadius: "12px",
+      background: "linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)",
+      color: "#fff",
+      fontFamily: "'DM Sans', sans-serif",
+      fontWeight: "600",
+      fontSize: "16px",
+      border: "none",
+      cursor: "pointer",
+      letterSpacing: "0.3px",
+      boxShadow: "0 4px 16px rgba(0,242,255,0.20)",
+      transition: "all 0.2s",
+    },
+    btnLoading: {
+      opacity: 0.75,
+      cursor: "not-allowed",
+      transform: "scale(0.99)",
+    },
+    spinnerWrap: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+    },
+    spinner: {
+      display: "inline-block",
+      width: "18px",
+      height: "18px",
+      border: "2.5px solid rgba(255,255,255,0.35)",
+      borderTopColor: "#fff",
+      borderRadius: "50%",
+      animation: "spin 0.75s linear infinite",
+    },
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-white/10 backdrop-blur-3xl">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[360px] bg-white p-10 sm:p-12 rounded-[32px] shadow-2xl relative flex flex-col items-center"
-      >
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-300 hover:text-slate-600 transition-colors">
-          <X className="w-5 h-5" />
-        </button>
-        
-        <div className="text-center mb-8 w-full">
-          <img src="/images/logo.png" alt="CYBEREIGN" className="h-10 w-auto mx-auto mb-6 grayscale brightness-0 opacity-80" />
-          
-          <h2 className="text-xl font-black text-[#ff0000] mb-2 leading-tight">Administrator Login!</h2>
-          <p className="text-[#0a2351] font-semibold text-base opacity-70">Enter your details to login.</p>
+    <div style={loginStyles.root}>
+      <div style={loginStyles.bgCircle1} />
+      <div style={loginStyles.bgCircle2} />
+
+      <div style={loginStyles.card}>
+        <div style={loginStyles.logoWrap}>
+           <img src="/images/logo.png" alt="Logo" style={{ height: "40px", grayscale: "1", filter: "brightness(0)" }} />
         </div>
-        
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
-           <div className="w-full">
-             <input 
-               type="text" 
-               value={username} 
-               onChange={e => setUsername(e.target.value)} 
-               required 
-               className="w-full bg-transparent border-b-2 border-slate-100 py-3 px-1 text-[#0a2351] text-sm focus:border-[#ff0000] outline-none transition-all placeholder:text-slate-300" 
-               placeholder="Username" 
-             />
-           </div>
-           
-           <div className="w-full">
-             <input 
-               type="password" 
-               value={password} 
-               onChange={e => setUsername(e.target.value)} 
-               required 
-               className="w-full bg-transparent border-b-2 border-slate-100 py-3 px-1 text-[#0a2351] text-sm focus:border-[#ff0000] outline-none transition-all placeholder:text-slate-300" 
-               placeholder="Password" 
-             />
-           </div>
-           
-           <button 
-             type="submit" 
-             disabled={isLoggingIn} 
-             className="w-full bg-[#ff0000] text-white h-14 rounded-xl text-lg font-bold hover:brightness-110 active:scale-[0.98] transition-all mt-6 shadow-md"
-           >
-             {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mx-auto text-white" /> : 'Login'}
-           </button>
+
+        <h1 style={loginStyles.title}>Administrator Login!</h1>
+        <p style={loginStyles.subtitle}>Enter your details to login.</p>
+
+        <form onSubmit={handleSubmit} style={loginStyles.form} noValidate>
+          <div style={{ ...loginStyles.inputWrap, ...(focused === "username" ? loginStyles.inputWrapFocused : {}) }}>
+            <span style={loginStyles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#aab0c0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="7" r="4" stroke="#aab0c0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => setFocused("username")}
+              onBlur={() => setFocused(null)}
+              style={loginStyles.input}
+            />
+          </div>
+
+          <div style={{ ...loginStyles.inputWrap, ...(focused === "password" ? loginStyles.inputWrapFocused : {}) }}>
+            <span style={loginStyles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="#aab0c0" strokeWidth="1.8"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#aab0c0" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </span>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocused("password")}
+              onBlur={() => setFocused(null)}
+              style={loginStyles.input}
+            />
+          </div>
+
+          <div style={loginStyles.forgotWrap}>
+            <a href="#" style={loginStyles.forgot}>Forgot password?</a>
+          </div>
+
+          {error && <p style={loginStyles.error}>{error}</p>}
+
+          <button type="submit" disabled={isLoading} style={{ ...loginStyles.btn, ...(isLoading ? loginStyles.btnLoading : {}) }}>
+            {isLoading ? (
+              <span style={loginStyles.spinnerWrap}><span style={loginStyles.spinner} /> Logging in...</span>
+            ) : "Login"}
+          </button>
         </form>
-      </motion.div>
+      </div>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes floatIn {
+          from { opacity: 0; transform: scale(0.96) translateY(16px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
