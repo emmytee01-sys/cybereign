@@ -193,63 +193,59 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6">
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         onClick={onClose}
-        className="fixed inset-0 bg-bg-primary/80 backdrop-blur-2xl"
+        className="fixed inset-0 bg-bg-primary/90 backdrop-blur-xl"
       />
       
       <motion.div 
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="relative w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative w-full max-w-[400px] z-10"
       >
-        {/* Glow effect back of card */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-[32px] blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+        <div className="absolute -inset-[2px] bg-gradient-to-r from-accent-primary via-accent-secondary to-accent-primary bg-[length:200%_auto] rounded-[32px] opacity-20 blur-lg animate-pulse"></div>
         
-        <div className="relative glass-card bg-bg-secondary/90 border-glass-border p-8 sm:p-12 rounded-[32px] shadow-2xl">
-          <button onClick={onClose} className="absolute top-8 right-8 text-text-muted hover:text-white transition-colors">
-            <X className="w-6 h-6" />
+        <div className="relative glass-card bg-bg-secondary p-10 rounded-[32px] border border-white/10 shadow-2xl">
+          <button onClick={onClose} className="absolute top-6 right-6 text-text-muted hover:text-white transition-colors">
+            <X className="w-5 h-5" />
           </button>
           
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-primary-10 to-accent-secondary-10 rounded-2xl border border-glass-border mb-8 shadow-inner">
-              <Shield className="w-10 h-10 text-accent-primary" />
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-accent-primary-10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-accent-primary-20">
+              <Shield className="w-8 h-8 text-accent-primary" />
             </div>
-            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">CMS LOGIN</h2>
-            <p className="text-text-secondary text-sm font-medium tracking-wide">Securely manage the CYBEREIGN environment.</p>
+            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">System Login</h2>
+            <p className="text-text-secondary text-xs uppercase tracking-widest font-bold opacity-60">CYBEREIGN Management</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-8">
-             <div className="space-y-3">
-               <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-primary">Username</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+             <div className="space-y-2">
                <div className="relative group">
-                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent-primary transition-colors" />
+                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-accent-primary transition-colors" />
                  <input 
                    type="text" 
                    value={username} 
                    onChange={e => setUsername(e.target.value)} 
                    required 
-                   className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/30" 
-                   placeholder="Enter username" 
+                   className="w-full bg-white/5 border border-glass-border rounded-2xl py-4 pl-12 pr-4 text-sm focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/30" 
+                   placeholder="Username" 
                  />
                </div>
              </div>
              
-             <div className="space-y-3">
-               <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-secondary">Password</label>
+             <div className="space-y-2">
                <div className="relative group">
-                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent-secondary transition-colors" />
+                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-accent-secondary transition-colors" />
                  <input 
                    type="password" 
                    value={password} 
                    onChange={e => setPassword(e.target.value)} 
                    required 
-                   className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 text-white focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/30" 
-                   placeholder="Enter password" 
+                   className="w-full bg-white/5 border border-glass-border rounded-2xl py-4 pl-12 pr-4 text-sm focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/30" 
+                   placeholder="Password" 
                  />
                </div>
              </div>
@@ -257,13 +253,13 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
              <button 
                type="submit" 
                disabled={isLoggingIn} 
-               className="btn btn-primary w-full h-16 text-lg font-bold shadow-[0_0_20px_rgba(0,242,255,0.2)] hover:shadow-[0_0_30px_rgba(0,242,255,0.4)] transition-all"
+               className="btn btn-primary w-full h-14 rounded-2xl text-sm font-bold tracking-widest uppercase shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
              >
-               {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" /> : 'Access Dashboard'}
+               {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Enter Dashboard'}
              </button>
              
-             <p className="text-center text-[10px] text-text-muted uppercase tracking-widest pt-4">
-               Authorized Access Only
+             <p className="text-center text-[10px] text-text-muted uppercase tracking-widest font-medium">
+               Secure Environment • CYBEREIGN 
              </p>
           </form>
         </div>
