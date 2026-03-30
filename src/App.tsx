@@ -193,45 +193,42 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-bg-primary/95 backdrop-blur-3xl">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-white/10 backdrop-blur-3xl">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-[320px] glass-card bg-bg-secondary/60 border-glass-border p-8 rounded-[24px] shadow-2xl relative"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[440px] bg-white p-12 sm:p-16 rounded-[40px] shadow-2xl relative flex flex-col items-center"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 text-text-muted hover:text-white transition-colors">
-          <X className="w-4 h-4" />
+        <button onClick={onClose} className="absolute top-8 right-8 text-slate-300 hover:text-slate-600 transition-colors">
+          <X className="w-6 h-6" />
         </button>
         
-        <div className="text-center mb-8 pt-4">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-accent-primary-10 rounded-xl border border-accent-primary-20 mb-4">
-            <Lock className="w-6 h-6 text-accent-primary" />
-          </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">CMS Access</h2>
-          <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1">Authorized Entry only</p>
+        <div className="text-center mb-10 w-full">
+          <img src="/images/logo.png" alt="CYBEREIGN" className="h-12 w-auto mx-auto mb-8 grayscale brightness-0 opacity-80" />
+          
+          <h2 className="text-2xl font-black text-[#ff0000] mb-3 leading-tight">Administrator Login!</h2>
+          <p className="text-[#0a2351] font-medium text-lg">Enter your details to login.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-5">
-           <div className="space-y-2">
-             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-accent-primary pl-1">ID</label>
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
+           <div className="w-full">
              <input 
                type="text" 
                value={username} 
                onChange={e => setUsername(e.target.value)} 
                required 
-               className="w-full bg-white/5 border border-glass-border rounded-xl py-3 px-4 text-sm text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/20" 
+               className="w-full bg-[#eef4ff] border border-[#cfdfef] rounded-lg py-4 px-6 text-[#0a2351] text-base focus:border-[#4a90e2] outline-none transition-all placeholder:text-slate-400" 
                placeholder="Username" 
              />
            </div>
            
-           <div className="space-y-2">
-             <label className="text-[9px] font-black uppercase tracking-[0.2em] text-accent-secondary pl-1">Key</label>
+           <div className="w-full">
              <input 
                type="password" 
                value={password} 
                onChange={e => setPassword(e.target.value)} 
                required 
-               className="w-full bg-white/5 border border-glass-border rounded-xl py-3 px-4 text-sm text-white focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/20" 
+               className="w-full bg-[#eef4ff] border border-[#cfdfef] rounded-lg py-4 px-6 text-[#0a2351] text-base focus:border-[#4a90e2] outline-none transition-all placeholder:text-slate-400" 
                placeholder="Password" 
              />
            </div>
@@ -239,14 +236,10 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
            <button 
              type="submit" 
              disabled={isLoggingIn} 
-             className="btn btn-primary w-full h-12 rounded-xl text-xs font-black uppercase tracking-widest transition-all mt-4"
+             className="w-full bg-[#ff0000] text-white h-16 rounded-xl text-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all mt-6 shadow-md"
            >
-             {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" /> : 'Enter System'}
+             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" /> : 'Login'}
            </button>
-           
-           <p className="text-center text-[8px] text-text-muted mt-6 opacity-40 uppercase tracking-[0.4em]">
-             Secure Session
-           </p>
         </form>
       </motion.div>
     </div>
