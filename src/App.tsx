@@ -193,37 +193,80 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-bg-primary/95 backdrop-blur-xl">
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card w-full max-w-md p-10 relative overflow-hidden">
-        <button onClick={onClose} className="absolute top-6 right-6 text-text-muted hover:text-white transition-colors"><X className="w-6 h-6" /></button>
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-accent-primary-10 rounded-3xl border border-accent-primary-20 mb-6 p-4">
-            <Lock className="w-10 h-10 text-accent-primary" />
-          </div>
-          <h2 className="text-3xl font-bold mb-2">CMS LOGIN</h2>
-          <p className="text-text-secondary">Securely manage the CYBEREIGN environment.</p>
-        </div>
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      {/* Backdrop */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        onClick={onClose}
+        className="fixed inset-0 bg-bg-primary/80 backdrop-blur-2xl"
+      />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="relative w-full max-w-md"
+      >
+        {/* Glow effect back of card */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-[32px] blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-           <div className="space-y-3">
-             <label className="text-xs font-black uppercase tracking-widest text-text-muted">Username</label>
-             <div className="relative">
-               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-               <input type="text" value={username} onChange={e => setUsername(e.target.value)} required className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 focus:border-accent-primary outline-none transition-all" placeholder="Enter username" />
+        <div className="relative glass-card bg-bg-secondary/90 border-glass-border p-8 sm:p-12 rounded-[32px] shadow-2xl">
+          <button onClick={onClose} className="absolute top-8 right-8 text-text-muted hover:text-white transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+          
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent-primary-10 to-accent-secondary-10 rounded-2xl border border-glass-border mb-8 shadow-inner">
+              <Shield className="w-10 h-10 text-accent-primary" />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">CMS LOGIN</h2>
+            <p className="text-text-secondary text-sm font-medium tracking-wide">Securely manage the CYBEREIGN environment.</p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-8">
+             <div className="space-y-3">
+               <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-primary">Username</label>
+               <div className="relative group">
+                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent-primary transition-colors" />
+                 <input 
+                   type="text" 
+                   value={username} 
+                   onChange={e => setUsername(e.target.value)} 
+                   required 
+                   className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 text-white focus:border-accent-primary outline-none transition-all placeholder:text-text-muted/30" 
+                   placeholder="Enter username" 
+                 />
+               </div>
              </div>
-           </div>
-           <div className="space-y-3">
-             <label className="text-xs font-black uppercase tracking-widest text-text-muted">Password</label>
-             <div className="relative">
-               <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 focus:border-accent-primary outline-none transition-all" placeholder="Enter password" />
+             
+             <div className="space-y-3">
+               <label className="text-[11px] font-black uppercase tracking-[0.2em] text-accent-secondary">Password</label>
+               <div className="relative group">
+                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent-secondary transition-colors" />
+                 <input 
+                   type="password" 
+                   value={password} 
+                   onChange={e => setPassword(e.target.value)} 
+                   required 
+                   className="w-full bg-white/5 border border-glass-border rounded-xl py-4 pl-12 pr-4 text-white focus:border-accent-secondary outline-none transition-all placeholder:text-text-muted/30" 
+                   placeholder="Enter password" 
+                 />
+               </div>
              </div>
-           </div>
-           
-           <button type="submit" disabled={isLoggingIn} className="btn btn-primary w-full h-16 text-lg font-bold">
-             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : 'Access Dashboard'}
-           </button>
-        </form>
+             
+             <button 
+               type="submit" 
+               disabled={isLoggingIn} 
+               className="btn btn-primary w-full h-16 text-lg font-bold shadow-[0_0_20px_rgba(0,242,255,0.2)] hover:shadow-[0_0_30px_rgba(0,242,255,0.4)] transition-all"
+             >
+               {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" /> : 'Access Dashboard'}
+             </button>
+             
+             <p className="text-center text-[10px] text-text-muted uppercase tracking-widest pt-4">
+               Authorized Access Only
+             </p>
+          </form>
+        </div>
       </motion.div>
     </div>
   );
