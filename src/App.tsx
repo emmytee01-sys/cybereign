@@ -40,13 +40,13 @@ const Header = () => {
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-12">
           {['About', 'Services', 'Industries', 'Insights'].map((item) => (
             <a key={item} href={`#${item.toLowerCase()}`} className="nav-link text-sm font-semibold text-text-secondary hover:text-white transition-all uppercase tracking-widest">
               {item}
             </a>
           ))}
-          <a href="#consultation" className="btn btn-primary h-12 py-0 px-6">
+          <a href="#consultation" className="btn btn-primary h-10 py-0 px-5 text-sm">
             Book Consultation
           </a>
         </nav>
