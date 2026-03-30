@@ -1,0 +1,103 @@
+{
+  "colors": {
+    "accentPrimary": "#00f2ff",
+    "accentSecondary": "#7000ff"
+  },
+  "hero": {
+    "tagline": "Govern, Protect, Comply",
+    "title": "Strengthening Governance, Risk, and Data Protection Systems for Modern Organizations",
+    "subtitle": "CYBEREIGN Consulting supports organizations that want to build stronger governance structures, improve compliance culture, and handle data responsibly in an increasingly regulated world.",
+    "ctaText": "Request Consultation",
+    "secondaryText": "Explore Our Services",
+    "image": "/images/hero_abstract_governance.png",
+    "stats": {
+      "value": "99%",
+      "label": "Compliance Rate"
+    }
+  },
+  "about": {
+    "tagline": "About CYBEREIGN",
+    "title": "Practical structures that organizations can actually use.",
+    "subtitle": "CYBEREIGN Consulting Limited is a governance, risk, and compliance advisory practice focused on helping organizations build systems that support accountability, manage risk, and protect trust.",
+    "bullets": [
+      "We focus on practical structures, not just policies that sit on paper.",
+      "Supporting startups, financial services, and beauty/lifestyle brands.",
+      "Specialized in handling data and operational risk across industries."
+    ],
+    "image": "/images/data_protection_visualization.png"
+  },
+  "services": {
+    "tagline": "Our Expertise",
+    "title": "Specialized Services for Modern Growth",
+    "items": [
+      {
+        "title": "Governance, Risk and Compliance Advisory",
+        "description": "We support organizations in developing governance structures, risk management processes, and compliance frameworks that align with regulatory expectations.",
+        "icon": "Shield",
+        "color": "accentPrimary"
+      },
+      {
+        "title": "Data Protection and Privacy Governance",
+        "description": "We help organizations understand how they collect, use, and protect data, while building systems that support responsible data practices.",
+        "icon": "Lock",
+        "color": "white"
+      },
+      {
+        "title": "IT Audit and Compliance Reviews",
+        "description": "We conduct structured reviews of internal systems and processes to identify gaps, improve controls, and strengthen accountability.",
+        "icon": "Search",
+        "color": "accentSecondary"
+      },
+      {
+        "title": "Data Protection Awareness Programs",
+        "description": "We design and deliver awareness sessions that help teams understand their role in protecting data and maintaining compliance.",
+        "icon": "Users",
+        "color": "accentPrimary"
+      }
+    ]
+  },
+  "industries": {
+    "tagline": "Who We Serve",
+    "title": "Governing Growth across Diverse Sectors.",
+    "description": "Our work applies across industries where governance, risk, and data protection matter. We adapt our frameworks to fit your specific operational needs.",
+    "items": [
+      "Financial services and fintech",
+      "Technology startups",
+      "Beauty and lifestyle brands",
+      "Creative and media industries",
+      "Small and medium enterprises"
+    ]
+  },
+  "insights": {
+    "tagline": "Perspectives",
+    "title": "Latest Insights & Thought Leadership.",
+    "description": "We share insights on governance, compliance, and data protection to help organizations better understand risk and accountability.",
+    "items": [
+      {
+        "title": "The Future of Privacy in Fintech",
+        "type": "Data Protection",
+        "icon": "Eye"
+      },
+      {
+        "title": "Navigating African Compliance Landscapes",
+        "type": "Governance",
+        "icon": "Globe"
+      },
+      {
+        "title": "Building Accountability in Operations",
+        "type": "Risk Management",
+        "icon": "TrendingUp"
+      }
+    ]
+  },
+  "consultation": {
+    "title": "Strong organizations do not wait for incidents.",
+    "subtitle": "If your organization is thinking about governance, compliance, or data protection, CYBEREIGN Consulting can support that journey."
+  },
+  "footer": {
+    "description": "Helping organizations build systems that support accountability, manage risk, and protect trust.",
+    "email": "cybereignconsulting@gmail.com",
+    "phone": "+234 906 378 7767",
+    "linkedin": "https://linkedin.com/company/cybereignconsulting"
+  }
+}

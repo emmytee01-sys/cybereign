@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, 
@@ -17,17 +17,234 @@ import {
   TrendingUp,
   Menu,
   X,
-  Phone
+  Phone,
+  Settings,
+  Edit2,
+  Save,
+  LogOut,
+  RefreshCcw,
+  Palette,
+  Layout,
+  Type,
+  Image as ImageIcon
 } from 'lucide-react';
+
+import contentData from './content.json';
+
+// --- CMS CONTEXT & LOGIC ---
+
+type CMSContent = typeof contentData;
+
+const CMSContext = createContext<{
+  content: CMSContent;
+  updateContent: (path: string, value: any) => void;
+  isEditMode: boolean;
+  setIsEditMode: (v: boolean) => void;
+  saveChanges: () => void;
+  resetChanges: () => void;
+} | null>(null);
+
+const CMSProvider = ({ children }: { children: React.ReactNode }) => {
+  const [content, setContent] = useState<CMSContent>(contentData);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    const savedContent = localStorage.getItem('cybereign_cms_draft');
+    if (savedContent) {
+      setContent(JSON.parse(savedContent));
+    }
+  }, []);
+
+  const updateContent = (path: string, value: any) => {
+    const newContent = JSON.parse(JSON.stringify(content));
+    const parts = path.split('.');
+    let target = newContent;
+    for (let i = 0; i < parts.length - 1; i++) {
+      target = target[parts[i]];
+    }
+    target[parts[parts.length - 1]] = value;
+    setContent(newContent);
+    localStorage.setItem('cybereign_cms_draft', JSON.stringify(newContent));
+  };
+
+  const saveChanges = () => {
+    // In a real app, this would push to Supabase/Firebase/Server
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'content.json';
+    link.click();
+    alert('Content saved to draft. Downloaded content.json. Replace it in the /src folder to finalize deployment.');
+  };
+
+  const resetChanges = () => {
+    if (confirm('Reset all draft changes to the original values?')) {
+      setContent(contentData);
+      localStorage.removeItem('cybereign_cms_draft');
+    }
+  };
+
+  return (
+    <CMSContext.Provider value={{ content, updateContent, isEditMode, setIsEditMode, saveChanges, resetChanges }}>
+      <div style={{ 
+        '--accent-primary': content.colors.accentPrimary, 
+        '--accent-secondary': content.colors.accentSecondary 
+      } as React.CSSProperties}>
+        {children}
+      </div>
+    </CMSContext.Provider>
+  );
+};
+
+const useCMS = () => {
+  const context = useContext(CMSContext);
+  if (!context) throw new Error('useCMS must be used within CMSProvider');
+  return context;
+};
+
+// --- CMS UI COMPONENTS ---
+
+const CMSControlPanel = () => {
+  const { isEditMode, setIsEditMode, saveChanges, resetChanges, content, updateContent } = useCMS();
+  const [activeTab, setActiveTab] = useState<'text' | 'colors' | 'layout'>('text');
+
+  if (!isEditMode) return (
+    <button 
+      onClick={() => {
+        const pass = prompt('Enter Admin Password:');
+        if (pass === 'cybereign2026') setIsEditMode(true);
+      }}
+      className="fixed bottom-8 right-8 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all z-[100] group"
+    >
+      <Settings className="w-5 h-5 text-accent-primary group-hover:rotate-90 transition-transform" />
+    </button>
+  );
+
+  return (
+    <motion.div 
+      initial={{ x: 400 }}
+      animate={{ x: 0 }}
+      className="fixed top-0 right-0 h-full w-[400px] bg-bg-secondary border-l border-glass-border z-[200] shadow-2xl flex flex-col pt-24 px-8 overflow-y-auto pb-32"
+    >
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Edit2 className="w-5 h-5 text-accent-primary" /> Admin CMS
+        </h2>
+        <button onClick={() => setIsEditMode(false)} className="text-text-muted hover:text-white">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+
+      <div className="flex gap-4 mb-8 border-b border-glass-border pb-4">
+        {[
+          { icon: Type, id: 'text', label: 'Content' },
+          { icon: Palette, id: 'colors', label: 'Theme' },
+          { icon: Layout, id: 'layout', label: 'Structure' }
+        ].map((tab) => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex flex-col items-center gap-2 text-xs font-bold uppercase tracking-widest ${activeTab === tab.id ? 'text-accent-primary' : 'text-text-muted hover:text-white'}`}
+          >
+            <tab.icon className="w-5 h-5" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'colors' && (
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <label className="text-sm font-bold uppercase tracking-widest text-text-muted">Primary Accent</label>
+            <div className="flex items-center gap-4">
+              <input 
+                type="color" 
+                value={content.colors.accentPrimary} 
+                onChange={(e) => updateContent('colors.accentPrimary', e.target.value)}
+                className="w-12 h-12 rounded-lg bg-transparent border-none cursor-pointer"
+              />
+              <span className="font-mono text-sm uppercase">{content.colors.accentPrimary}</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <label className="text-sm font-bold uppercase tracking-widest text-text-muted">Secondary Accent</label>
+            <div className="flex items-center gap-4">
+              <input 
+                type="color" 
+                value={content.colors.accentSecondary} 
+                onChange={(e) => updateContent('colors.accentSecondary', e.target.value)}
+                className="w-12 h-12 rounded-lg bg-transparent border-none cursor-pointer"
+              />
+              <span className="font-mono text-sm uppercase">{content.colors.accentSecondary}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'text' && (
+        <div className="space-y-8">
+          <SectionEditor title="Hero Section">
+             <Field label="Tagline" value={content.hero.tagline} onChange={(v) => updateContent('hero.tagline', v)} />
+             <Field label="Headline" value={content.hero.title} textarea onChange={(v) => updateContent('hero.title', v)} />
+             <Field label="Subtext" value={content.hero.subtitle} textarea onChange={(v) => updateContent('hero.subtitle', v)} />
+          </SectionEditor>
+
+          <SectionEditor title="Contact Info">
+             <Field label="Email" value={content.footer.email} onChange={(v) => updateContent('footer.email', v)} />
+             <Field label="Phone" value={content.footer.phone} onChange={(v) => updateContent('footer.phone', v)} />
+             <Field label="LinkedIn URL" value={content.footer.linkedin} onChange={(v) => updateContent('footer.linkedin', v)} />
+          </SectionEditor>
+        </div>
+      )}
+      
+      <div className="fixed bottom-0 right-0 w-[400px] p-8 bg-bg-secondary border-t border-glass-border flex flex-col gap-4">
+        <button onClick={saveChanges} className="btn btn-primary w-full h-12 flex items-center justify-center gap-2">
+          <Save className="w-5 h-5" /> Deploy & Save
+        </button>
+        <button onClick={resetChanges} className="btn btn-secondary w-full h-12 flex items-center justify-center gap-2">
+          <RefreshCcw className="w-5 h-5" /> Reset Draft
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+const SectionEditor = ({ title, children }: { title: string, children: React.ReactNode }) => (
+  <div className="space-y-4">
+    <h3 className="text-sm font-black uppercase text-accent-primary border-l-4 border-accent-primary pl-3">{title}</h3>
+    <div className="space-y-4 pl-4">{children}</div>
+  </div>
+);
+
+const Field = ({ label, value, textarea, onChange }: { label: string, value: string, textarea?: boolean, onChange: (v: string) => void }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">{label}</label>
+    {textarea ? (
+      <textarea 
+        value={value} 
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white/5 border border-glass-border rounded-lg p-3 text-sm focus:border-accent-primary transition-colors outline-none h-24"
+      />
+    ) : (
+      <input 
+        type="text" 
+        value={value} 
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white/5 border border-glass-border rounded-lg p-3 text-sm focus:border-accent-primary transition-colors outline-none"
+      />
+    )}
+  </div>
+);
+
+// --- WEBSITE COMPONENTS ---
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -82,23 +299,20 @@ const Header = () => {
 };
 
 const Hero = () => {
+  const { content } = useCMS();
   return (
     <section className="relative min-h-screen pt-40 pb-20 overflow-hidden flex items-center">
       <div className="absolute inset-0 z-10 pointer-events-none">
-        <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-accent-primary/10 blur-[150px] rounded-full"></div>
-        <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-accent-secondary/10 blur-[150px] rounded-full"></div>
+        <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-accent-primary-10 blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-accent-secondary-10 blur-[150px] rounded-full"></div>
       </div>
       
       <div className="container relative z-20">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-primary-10 border border-accent-primary-20 text-accent-primary text-sm font-semibold mb-8">
               <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse"></span>
-              Govern, Protect, Comply
+              {content.hero.tagline}
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1]">
@@ -106,63 +320,43 @@ const Hero = () => {
             </h1>
             
             <p className="text-xl text-text-secondary mb-10 max-w-xl leading-relaxed">
-              CYBEREIGN Consulting supports organizations that want to build stronger governance structures, improve compliance culture, and handle data responsibly in an increasingly regulated world.
+              {content.hero.subtitle}
             </p>
             
             <div className="flex flex-wrap gap-5">
-              <a href="#consultation" className="btn btn-primary px-10 h-16 text-lg">
-                Request Consultation
-              </a>
+              <a href="#consultation" className="btn btn-primary px-10 h-16 text-lg">{content.hero.ctaText}</a>
               <a href="#services" className="btn btn-secondary px-10 h-16 text-lg">
-                Explore Our Services <ChevronRight className="w-5 h-5" />
+                {content.hero.secondaryText} <ChevronRight className="w-5 h-5" />
               </a>
             </div>
             
             <div className="mt-12 flex items-center gap-8 border-t border-glass-border pt-12">
               <div>
                 <p className="text-sm text-text-muted mb-2 uppercase tracking-widest font-bold">Nigeria Presence</p>
-                <div className="flex items-center gap-2 text-white font-medium">
-                  <MapPin className="w-4 h-4 text-accent-primary" /> Lagos, Nigeria
-                </div>
+                <div className="flex items-center gap-2 text-white font-medium"><MapPin className="w-4 h-4 text-accent-primary" /> Lagos, Nigeria</div>
               </div>
               <div className="h-10 w-px bg-glass-border"></div>
               <div>
                 <p className="text-sm text-text-muted mb-2 uppercase tracking-widest font-bold">United States Presence</p>
-                <div className="flex items-center gap-2 text-white font-medium">
-                  <Globe className="w-4 h-4 text-accent-secondary" /> Duncanville, TX
-                </div>
+                <div className="flex items-center gap-2 text-white font-medium"><Globe className="w-4 h-4 text-accent-secondary" /> Duncanville, TX</div>
               </div>
             </div>
           </motion.div>
           
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.2 }} className="relative">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-glass-border">
-              <img 
-                src="/images/hero_abstract_governance.png" 
-                alt="Governance & Security" 
-                className="w-full object-cover" 
-              />
+              <img src={content.hero.image} alt="Governance" className="w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-transparent to-transparent opacity-60"></div>
             </div>
             
-            {/* Stats Card Overlay */}
-            <motion.div 
-              className="absolute -bottom-10 -left-10 glass-card p-6 p-8 max-w-[240px]"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            >
+            <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity }} className="absolute -bottom-10 -left-10 glass-card p-6 p-8 max-w-[240px]">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-accent-primary-10 rounded-xl flex items-center justify-center">
                   <BarChart3 className="text-accent-primary w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">99%</p>
-                  <p className="text-xs text-text-muted">Compliance Rate</p>
+                  <p className="text-2xl font-bold text-white">{content.hero.stats.value}</p>
+                  <p className="text-xs text-text-muted">{content.hero.stats.label}</p>
                 </div>
               </div>
               <div className="h-1 w-full bg-glass-border rounded-full overflow-hidden">
@@ -177,45 +371,27 @@ const Hero = () => {
 };
 
 const About = () => {
+  const { content } = useCMS();
   return (
     <section id="about" className="section relative overflow-hidden">
       <div className="container">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
-          <motion.div
-            whileInView={{ opacity: 1, x: 0 }}
-            initial={{ opacity: 0, x: -30 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
+          <motion.div whileInView={{ opacity: 1, x: 0 }} initial={{ opacity: 0, x: -30 }} viewport={{ once: true }} className="relative">
             <div className="rounded-3xl overflow-hidden glass-card p-4">
-              <img 
-                src="/images/data_protection_visualization.png" 
-                alt="Data Protection" 
-                className="rounded-2xl" 
-              />
+              <img src={content.about.image} alt="Data" className="rounded-2xl" />
             </div>
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent-primary/20 blur-[60px] rounded-full"></div>
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent-secondary/20 blur-[60px] rounded-full"></div>
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent-primary-20 blur-[60px] rounded-full"></div>
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent-secondary-20 blur-[60px] rounded-full"></div>
           </motion.div>
           
-          <motion.div
-            whileInView={{ opacity: 1, x: 0 }}
-            initial={{ opacity: 0, x: 30 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">About CYBEREIGN</h2>
+          <motion.div whileInView={{ opacity: 1, x: 0 }} initial={{ opacity: 0, x: 30 }} viewport={{ once: true }}>
+            <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">{content.about.tagline}</h2>
             <h3 className="text-4xl md:text-5xl font-bold mb-8">Practical structures that organizations can <span className="gradient-text">actually use</span>.</h3>
             
-            <p className="text-lg text-text-secondary mb-10 leading-relaxed">
-              CYBEREIGN Consulting Limited is a governance, risk, and compliance advisory practice focused on helping organizations build systems that support accountability, manage risk, and protect trust.
-            </p>
+            <p className="text-lg text-text-secondary mb-10 leading-relaxed">{content.about.subtitle}</p>
             
             <div className="space-y-6">
-              {[
-                "We focus on practical structures, not just policies that sit on paper.",
-                "Supporting startups, financial services, and beauty/lifestyle brands.",
-                "Specialized in handling data and operational risk across industries."
-              ].map((text, i) => (
+              {content.about.bullets.map((text, i) => (
                 <div key={i} className="flex gap-4 items-start">
                   <div className="mt-1 w-6 h-6 rounded-full bg-accent-primary-20 flex items-center justify-center flex-shrink-0">
                     <CheckCircle2 className="w-4 h-4 text-accent-primary" />
@@ -223,12 +399,6 @@ const About = () => {
                   <p className="text-white text-lg">{text}</p>
                 </div>
               ))}
-            </div>
-            
-            <div className="mt-12">
-              <a href="#consultation" className="btn btn-secondary py-5 px-8">
-                Learn our approach
-              </a>
             </div>
           </motion.div>
         </div>
@@ -238,67 +408,33 @@ const About = () => {
 };
 
 const Services = () => {
-  const services = [
-    {
-      title: "Governance, Risk and Compliance Advisory",
-      desc: "We support organizations in developing governance structures, risk management processes, and compliance frameworks that align with regulatory expectations.",
-      icon: Shield,
-      color: "accent-primary"
-    },
-    {
-      title: "Data Protection and Privacy Governance",
-      desc: "We help organizations understand how they collect, use, and protect data, while building systems that support responsible data practices.",
-      icon: Lock,
-      color: "white"
-    },
-    {
-      title: "IT Audit and Compliance Reviews",
-      desc: "We conduct structured reviews of internal systems and processes to identify gaps, improve controls, and strengthen accountability.",
-      icon: Search,
-      color: "accent-secondary"
-    },
-    {
-      title: "Data Protection Awareness Programs",
-      desc: "We design and deliver awareness sessions that help teams understand their role in protecting data and maintaining compliance.",
-      icon: Users,
-      color: "accent-primary"
-    }
-  ];
+  const { content } = useCMS();
+  const iconMap: any = { Shield, Lock, Search, Users };
 
   return (
-    <section id="services" className="section bg-bg-secondary/30">
+    <section id="services" className="section bg-bg-secondary-30">
       <div className="container">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <motion.div
-            whileInView={{ opacity: 1, y: 0 }}
-            initial={{ opacity: 0, y: 20 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">Our Expertise</h2>
-            <h3 className="text-4xl md:text-6xl font-bold mb-8">Specialized Services for Modern Growth</h3>
-          </motion.div>
+           <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">{content.services.tagline}</h2>
+           <h3 className="text-4xl md:text-6xl font-bold mb-8">{content.services.title}</h3>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8">
-          {services.map((item, i) => (
-            <motion.div
-              key={i}
-              whileInView={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 30 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-10 flex flex-col items-start gap-6 group hover:translate-y-[-10px] transition-all duration-300"
-            >
-              <div className={`w-16 h-16 rounded-2xl bg-${item.color === 'accent-primary' ? 'accent-primary-10' : item.color === 'accent-secondary' ? 'accent-secondary-10' : 'white-5'} flex items-center justify-center p-4 border border-${item.color === 'accent-primary' ? 'accent-primary-20' : item.color === 'accent-secondary' ? 'accent-secondary-20' : 'glass-border'} group-hover:scale-110 transition-transform`}>
-                 <item.icon className={`w-full h-full text-${item.color === 'white' ? 'accent-primary' : item.color}`} />
-              </div>
-              <h4 className="text-2xl font-bold text-white group-hover:text-accent-primary transition-colors">{item.title}</h4>
-              <p className="text-text-secondary text-lg leading-relaxed">{item.desc}</p>
-              <a href="#consultation" className="mt-auto flex items-center gap-2 font-bold text-white group-hover:gap-4 transition-all">
-                Request Advisory <ArrowRight className="w-5 h-5 text-accent-primary" />
-              </a>
-            </motion.div>
-          ))}
+          {content.services.items.map((item, i) => {
+            const Icon = iconMap[item.icon];
+            return (
+              <motion.div key={i} whileInView={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} className="glass-card p-10 flex flex-col items-start gap-6 group hover:translate-y-[-10px] transition-all duration-300">
+                <div className={`w-16 h-16 rounded-2xl bg-${item.color === 'accentPrimary' ? 'accent-primary-10' : item.color === 'accentSecondary' ? 'accent-secondary-10' : 'white-5'} flex items-center justify-center p-4 border border-glass-border group-hover:scale-110 transition-transform`}>
+                   <Icon className={`w-full h-full text-${item.color === 'white' ? 'accent-primary' : item.color}`} />
+                </div>
+                <h4 className="text-2xl font-bold text-white group-hover:text-accent-primary transition-colors">{item.title}</h4>
+                <p className="text-text-secondary text-lg leading-relaxed">{item.description}</p>
+                <a href="#consultation" className="mt-auto flex items-center gap-2 font-bold text-white group-hover:gap-4 transition-all">
+                  Request Advisory <ArrowRight className="w-5 h-5 text-accent-primary" />
+                </a>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -306,42 +442,24 @@ const Services = () => {
 };
 
 const Industries = () => {
-  const industries = [
-    "Financial services and fintech",
-    "Technology startups",
-    "Beauty and lifestyle brands",
-    "Creative and media industries",
-    "Small and medium enterprises"
-  ];
-
+  const { content } = useCMS();
   return (
     <section id="industries" className="section">
       <div className="container">
         <div className="glass-card p-12 md:p-20 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-[50%] h-full bg-accent-primary/5 blur-[100px] pointer-events-none"></div>
-          
+          <div className="absolute top-0 right-0 w-[50%] h-full bg-accent-primary-5 blur-[100px] pointer-events-none"></div>
           <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10">
             <div>
-              <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">Who We Serve</h2>
-              <h3 className="text-4xl md:text-5xl font-bold mb-8">Governing Growth across Diverse Sectors.</h3>
-              <p className="text-xl text-text-secondary leading-relaxed">
-                Our work applies across industries where governance, risk, and data protection matter. We adapt our frameworks to fit your specific operational needs.
-              </p>
+              <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">{content.industries.tagline}</h2>
+              <h3 className="text-4xl md:text-5xl font-bold mb-8">{content.industries.title}</h3>
+              <p className="text-xl text-text-secondary leading-relaxed">{content.industries.description}</p>
             </div>
-            
             <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-6">
-              {industries.map((industry, i) => (
-                <motion.div 
-                  key={i} 
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex items-center gap-4 group"
-                >
+              {content.industries.items.map((industry, i) => (
+                <div key={i} className="flex items-center gap-4 group">
                   <div className="w-3 h-3 rounded-full bg-accent-primary group-hover:scale-150 transition-transform"></div>
                   <span className="text-xl font-medium text-text-secondary group-hover:text-white transition-colors">{industry}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -352,60 +470,32 @@ const Industries = () => {
 };
 
 const Insights = () => {
-  const insights = [
-    {
-      title: "The Future of Privacy in Fintech",
-      type: "Data Protection",
-      icon: Eye
-    },
-    {
-      title: "Navigating African Compliance Landscapes",
-      type: "Governance",
-      icon: Globe
-    },
-    {
-      title: "Building Accountability in Operations",
-      type: "Risk Management",
-      icon: TrendingUp
-    }
-  ];
+  const { content } = useCMS();
+  const iconMap: any = { Eye, Globe, TrendingUp };
 
   return (
-    <section id="insights" className="section bg-bg-secondary/30">
+    <section id="insights" className="section bg-bg-secondary-30">
       <div className="container text-center">
-        <motion.div
-           whileInView={{ opacity: 1, y: 0 }}
-           initial={{ opacity: 0, y: 20 }}
-           viewport={{ once: true }}
-           className="mb-16"
-        >
-          <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">Perspectives</h2>
-          <h3 className="text-4xl md:text-5xl font-bold mb-8">Latest Insights & Thought Leadership.</h3>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            We share insights on governance, compliance, and data protection to help organizations better understand risk and accountability.
-          </p>
-        </motion.div>
+        <h2 className="text-3xl font-bold text-accent-primary mb-6 uppercase tracking-widest">{content.insights.tagline}</h2>
+        <h3 className="text-4xl md:text-5xl font-bold mb-8">{content.insights.title}</h3>
+        <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-16">{content.insights.description}</p>
         
         <div className="grid md:grid-cols-3 gap-8">
-          {insights.map((item, i) => (
-            <motion.div
-              key={i}
-              whileInView={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 20 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-10 text-left hover:border-accent-primary/30 group"
-            >
-              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-8 border border-glass-border">
-                <item.icon className="w-6 h-6 text-accent-primary" />
-              </div>
-              <p className="text-sm font-bold text-accent-primary uppercase tracking-widest mb-4">{item.type}</p>
-              <h4 className="text-2xl font-bold text-white mb-8 leading-tight group-hover:text-accent-primary transition-colors">{item.title}</h4>
-              <button className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all">
-                Read Article <ChevronRight className="w-4 h-4 text-accent-primary" />
-              </button>
-            </motion.div>
-          ))}
+          {content.insights.items.map((item, i) => {
+             const Icon = iconMap[item.icon];
+             return (
+              <motion.div key={i} whileInView={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 20 }} viewport={{ once: true }} className="glass-card p-10 text-left hover:border-accent-primary-30 group">
+                <div className="w-12 h-12 bg-white-5 rounded-xl flex items-center justify-center mb-8 border border-glass-border">
+                  <Icon className="w-6 h-6 text-accent-primary" />
+                </div>
+                <p className="text-sm font-bold text-accent-primary uppercase tracking-widest mb-4">{item.type}</p>
+                <h4 className="text-2xl font-bold text-white mb-8 leading-tight group-hover:text-accent-primary transition-colors">{item.title}</h4>
+                <button className="flex items-center gap-2 font-bold group-hover:gap-4 transition-all">
+                  Read Article <ChevronRight className="w-4 h-4 text-accent-primary" />
+                </button>
+              </motion.div>
+             );
+          })}
         </div>
       </div>
     </section>
@@ -413,30 +503,18 @@ const Insights = () => {
 };
 
 const Consultation = () => {
+  const { content } = useCMS();
   return (
     <section id="consultation" className="section bg-accent-secondary-5 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent-primary-30 to-transparent"></div>
-      
-      <div className="container relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            whileInView={{ opacity: 1, scale: 1 }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            viewport={{ once: true }}
-            className="glass-card p-12 md:p-24 border-accent-primary/20 backdrop-blur-xl"
-          >
-            <h2 className="text-4xl md:text-6xl font-bold mb-8">Strong organizations do not wait for incidents.</h2>
-            <p className="text-xl md:text-2xl text-text-secondary mb-12 leading-relaxed">
-              If your organization is thinking about governance, compliance, or data protection, CYBEREIGN Consulting can support that journey.
-            </p>
-            
+      <div className="container relative z-10 text-center">
+        <div className="max-w-4xl mx-auto">
+          <motion.div whileInView={{ opacity: 1, scale: 1 }} initial={{ opacity: 0, scale: 0.95 }} viewport={{ once: true }} className="glass-card p-12 md:p-24 border-accent-primary-20 backdrop-blur-xl">
+            <h2 className="text-4xl md:text-6xl font-bold mb-8">{content.consultation.title}</h2>
+            <p className="text-xl md:text-2xl text-text-secondary mb-12 leading-relaxed">{content.consultation.subtitle}</p>
             <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <button className="btn btn-primary px-12 py-6 text-xl">
-                Request Advisory Consultation
-              </button>
-              <a href="mailto:cybereignconsulting@gmail.com" className="btn btn-secondary px-12 py-6 text-xl">
-                <Mail className="w-6 h-6" /> Contact Us
-              </a>
+              <button className="btn btn-primary px-12 py-6 text-xl">Request Advisory Consultation</button>
+              <a href={`mailto:${content.footer.email}`} className="btn btn-secondary px-12 py-6 text-xl"><Mail className="w-6 h-6" /> Contact Us</a>
             </div>
           </motion.div>
         </div>
@@ -446,90 +524,60 @@ const Consultation = () => {
 };
 
 const Footer = () => {
+  const { content } = useCMS();
   return (
     <footer className="bg-bg-primary pt-32 pb-16 border-t border-glass-border">
       <div className="container">
         <div className="grid lg:grid-cols-4 gap-16 mb-20">
           <div className="lg:col-span-2">
-            <a href="#" className="flex items-center mb-8">
-              <img src="/images/logo.png" alt="CYBEREIGN" className="h-12 md:h-14 w-auto object-contain" />
-            </a>
-            <p className="text-lg text-text-secondary mb-8 max-w-sm">
-              Helping organizations build systems that support accountability, manage risk, and protect trust.
-            </p>
+            <a href="#" className="flex items-center mb-8"><img src="/images/logo.png" alt="Logo" className="h-12 md:h-14 w-auto object-contain" /></a>
+            <p className="text-lg text-text-secondary mb-8 max-w-sm">{content.footer.description}</p>
             <div className="flex gap-4">
-              <a href="https://linkedin.com/company/cybereignconsulting" className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary hover:text-bg-primary transition-all">
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a href="mailto:cybereignconsulting@gmail.com" className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary hover:text-bg-primary transition-all">
-                <Mail className="w-5 h-5" />
-              </a>
+              <a href={content.footer.linkedin} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary hover:text-bg-primary transition-all"><Linkedin className="w-5 h-5" /></a>
+              <a href={`mailto:${content.footer.email}`} className="w-12 h-12 rounded-full border border-glass-border flex items-center justify-center hover:bg-accent-primary hover:text-bg-primary transition-all"><Mail className="w-5 h-5" /></a>
             </div>
           </div>
-          
           <div>
             <h4 className="text-lg font-bold text-white mb-8">Locations</h4>
             <div className="space-y-6">
-              <div>
-                <p className="text-accent-primary font-bold text-sm uppercase mb-2">Head office</p>
-                <p className="text-text-secondary leading-relaxed">
-                  Lagos, Nigeria
-                </p>
-              </div>
-              <div>
-                <p className="text-accent-secondary font-bold text-sm uppercase mb-2">Remote Presence</p>
-                <p className="text-text-secondary leading-relaxed">
-                  Duncanville, Texas, United States
-                </p>
-              </div>
+              <div><p className="text-accent-primary font-bold text-sm uppercase mb-2">Head office</p><p className="text-text-secondary">Lagos, Nigeria</p></div>
+              <div><p className="text-accent-secondary font-bold text-sm uppercase mb-2">Remote Presence</p><p className="text-text-secondary">Duncanville, Texas, US</p></div>
             </div>
           </div>
-          
           <div>
             <h4 className="text-lg font-bold text-white mb-8">Contact</h4>
             <div className="space-y-4">
-              <a href="tel:+2349063787767" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
-                <Phone className="w-5 h-5 text-accent-primary" /> +234 906 378 7767
-              </a>
-              <a href="mailto:cybereignconsulting@gmail.com" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
-                <Mail className="w-5 h-5 text-accent-secondary" /> cybereignconsulting@gmail.com
-              </a>
-              <a href="https://linkedin.com/company/cybereignconsulting" className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors">
-                <Linkedin className="w-5 h-5 text-accent-primary" /> cybereignconsulting
-              </a>
+              <a href={`tel:${content.footer.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Phone className="w-5 h-5 text-accent-primary" /> {content.footer.phone}</a>
+              <a href={`mailto:${content.footer.email}`} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Mail className="w-5 h-5 text-accent-secondary" /> {content.footer.email}</a>
+              <a href={content.footer.linkedin} className="flex items-center gap-3 text-text-secondary hover:text-white transition-colors"><Linkedin className="w-5 h-5 text-accent-primary" /> cybereignconsulting</a>
             </div>
           </div>
         </div>
-        
         <div className="pt-12 border-t border-glass-border flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-text-muted text-sm">
-            © 2026 CYBEREIGN Consulting Limited. All rights reserved.
-          </p>
-          <div className="flex gap-8">
-            <a href="#" className="text-sm text-text-muted hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="text-sm text-text-muted hover:text-white transition-colors">Terms of Service</a>
-          </div>
+          <p className="text-text-muted text-sm">© 2026 CYBEREIGN Consulting Limited. All rights reserved.</p>
+          <div className="flex gap-8"><a href="#" className="text-sm text-text-muted hover:text-white">Privacy Policy</a><a href="#" className="text-sm text-text-muted hover:text-white">Terms of Service</a></div>
         </div>
       </div>
     </footer>
   );
 };
 
-function App() {
+export default function App() {
   return (
-    <div className="bg-bg-primary text-text-primary selection-accent-primary">
-      <Header />
-      <main>
-        <Hero />
-        <About />
-        <Services />
-        <Industries />
-        <Insights />
-        <Consultation />
-      </main>
-      <Footer />
-    </div>
+    <CMSProvider>
+       <div className="bg-bg-primary text-text-primary selection-accent-primary">
+          <Header />
+          <main>
+            <Hero />
+            <About />
+            <Services />
+            <Industries />
+            <Insights />
+            <Consultation />
+          </main>
+          <Footer />
+          <CMSControlPanel />
+       </div>
+    </CMSProvider>
   );
 }
-
-export default App;
