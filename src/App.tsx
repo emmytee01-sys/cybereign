@@ -371,7 +371,9 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-primary-10 border border-accent-primary-20 text-accent-primary text-sm font-semibold mb-8"><span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse"></span>{content.hero.tagline}</div>
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1]">{content.hero.title.split(',').map((p, i) => i === 1 ? <span key={i} className="gradient-text">{p}, </span> : p + (i === 0 ? ',' : ''))}</h1>
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1]">
+              Strengthening <span className="text-accent-primary">Governance,</span> <span className="text-accent-secondary">Risk,</span> and Data Protection.
+            </h1>
             <p className="text-xl text-text-secondary mb-10 max-w-xl">{content.hero.subtitle}</p>
             <div className="flex flex-wrap gap-5">
               <a href="#consultation" className="btn btn-primary px-10 h-16 text-lg">{content.hero.ctaText}</a>
