@@ -514,7 +514,7 @@ const Consultation = () => {
 };
 
 const Footer = () => {
-  const { content } = useCMS();
+  const { content, setIsEditMode } = useCMS();
   return (
     <footer className="bg-bg-primary pt-32 pb-16 border-t border-glass-border">
       <div className="container">
@@ -553,7 +553,7 @@ const Footer = () => {
                 const pass = prompt('Enter Admin Password:');
                 if (pass === 'cybereign2026') setIsEditMode(true);
               }}
-              className="text-sm text-accent-primary/50 hover:text-accent-primary flex items-center gap-2 border-l border-glass-border pl-8 transition-colors"
+              className="text-sm text-accent-primary flex items-center gap-2 border-l border-glass-border pl-8 transition-colors hover:opacity-80"
             >
               <Lock className="w-3 h-3" /> Admin Login
             </button>
