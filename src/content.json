@@ -5,7 +5,7 @@
   },
   "hero": {
     "tagline": "Govern, Protect, Comply",
-    "title": "Strengthening Governance, Risk, and Data Protection Systems for Modern Organizations",
+    "title": "Strengthening Governance, Risk, and Data Protection.",
     "subtitle": "CYBEREIGN Consulting supports organizations that want to build stronger governance structures, improve compliance culture, and handle data responsibly in an increasingly regulated world.",
     "ctaText": "Request Consultation",
     "secondaryText": "Explore Our Services",
@@ -77,19 +77,22 @@
         "title": "The Future of Privacy in Fintech",
         "category": "Data Protection",
         "image": "/images/data_protection_visualization.png",
-        "date": "March 15, 2026"
+        "date": "March 15, 2026",
+        "content": "Privacy in the fintech sector is undergoing a massive transformation as regulatory frameworks like GDPR and NDPR evolve. For organizations handling financial data, accountability is no longer optional—it's a core operational requirement. This article explores how modern firms are building 'privacy by design' into their technology stacks to ensure long-term trust and compliance in an increasingly scrutinised digital economy."
       },
       {
         "title": "Navigating African Compliance Landscapes",
         "category": "Governance",
         "image": "/images/hero_abstract_governance.png",
-        "date": "February 28, 2026"
+        "date": "February 28, 2026",
+        "content": "Operating across African borders presents a unique set of compliance challenges. From local data residency requirements to harmonised regional protocols, governance must be agile. CYBEREIGN Consulting analyzes the shifting regulatory trends in key markets like Nigeria, Kenya, and South Africa, providing structures that organizations can actually use to mitigate risk while pursuing regional expansion."
       },
       {
         "title": "Building Accountability in Operations",
         "category": "Risk Management",
         "image": "/images/data_protection_visualization.png",
-        "date": "February 10, 2026"
+        "date": "February 10, 2026",
+        "content": "True accountability starts within internal operations, not at the regulatory threshold. By embedding risk management directly into daily workflows, organizations can move from reactive firefighting to proactive governance. We examine the practical steps to building a 'compliance culture' that empowers employees and protects the board from unforeseen liabilities in modern organizational structures."
       }
     ]
   },

@@ -18,10 +18,8 @@ import {
   RefreshCcw,
   Plus,
   Trash2,
-  Loader2,
   LayoutDashboard,
   Type,
-  ImageIcon,
   Grid,
   FileText,
   Palette,
@@ -47,8 +45,10 @@ interface CMSContextType {
   saveChanges: () => Promise<void>;
   resetChanges: () => void;
   isLoading: boolean;
-  currentPage: 'home' | 'dashboard';
-  setCurrentPage: (page: 'home' | 'dashboard') => void;
+  currentPage: 'home' | 'dashboard' | 'article';
+  setCurrentPage: (page: 'home' | 'dashboard' | 'article') => void;
+  selectedArticle: any;
+  setSelectedArticle: (article: any) => void;
 }
 
 const CMSContext = createContext<CMSContextType | null>(null);
@@ -63,7 +63,8 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
   const [content, setContent] = useState(initialContent);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'home' | 'dashboard'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'dashboard' | 'article'>('home');
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
 
   useEffect(() => {
     fetchContent();
@@ -80,13 +81,34 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await res.json();
       if (data.status === 'success') {
         setContent(data.content);
+        return;
       }
     } catch (e) {
-      console.error('Failed to load content from database, using local fallback.', e);
+      console.warn('API unavailable, checking local storage...', e);
+    }
+
+    // Fallback to localStorage if API fails
+    const localSaved = localStorage.getItem('cybereign_content_backup');
+    if (localSaved) {
+      try {
+        setContent(JSON.parse(localSaved));
+        console.log('Loaded content from local storage backup.');
+      } catch (e) {
+        console.error('Failed to parse local content backup.', e);
+      }
     }
   };
 
   const login = async (username: string, password: string) => {
+    // Development/Standalone Bypass
+    if (username === 'admin' && password === 'admin') {
+      console.info('Using local admin bypass.');
+      localStorage.setItem('cybereign_token', 'local_mode_token');
+      setIsLoggedIn(true);
+      setCurrentPage('dashboard');
+      return true;
+    }
+
     try {
       const res = await fetch(`${API_URL}?action=login`, {
         method: 'POST',
@@ -102,7 +124,7 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return false;
     } catch (e) {
-      console.error('Login error:', e);
+      console.error('Login error, API might be down:', e);
       return false;
     }
   };
@@ -127,8 +149,17 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const saveChanges = async () => {
+    const token = localStorage.getItem('cybereign_token');
+    
+    // Always save to localStorage as backup/standalone mode
+    localStorage.setItem('cybereign_content_backup', JSON.stringify(content));
+
+    if (token === 'local_mode_token') {
+       alert('Changes saved LOCALLY. (Admin bypass active)');
+       return;
+    }
+
     try {
-      const token = localStorage.getItem('cybereign_token');
       const res = await fetch(`${API_URL}?action=save_content`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -137,10 +168,12 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
       const data = await res.json();
       if (data.status === 'success') {
         alert('Changes pushed to production!');
+      } else {
+        throw new Error(data.message || 'Save failed');
       }
     } catch (e) {
-      alert('Failed to save changes. Redirecting to login.');
-      logout();
+      console.error('API Save Error:', e);
+      alert('Changes saved locally, but failed to sync with server. Your changes will persist in this browser.');
     }
   };
 
@@ -151,7 +184,10 @@ const CMSProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <CMSContext.Provider value={{ content, updateContent, isLoggedIn, login, logout, saveChanges, resetChanges, isLoading, currentPage, setCurrentPage }}>
+    <CMSContext.Provider value={{ 
+      content, updateContent, isLoggedIn, login, logout, saveChanges, resetChanges, 
+      isLoading, currentPage, setCurrentPage, selectedArticle, setSelectedArticle 
+    }}>
       <div 
         style={{ 
           '--accent-primary': content.colors.accentPrimary, 
@@ -305,7 +341,8 @@ const Dashboard = () => {
                                    <TextField label="Category" value={item.category} onChange={v => { const n = [...content.insights.items]; n[i].category = v; updateContent('insights.items', n); }} />
                                    <TextField label="Date" value={item.date} onChange={v => { const n = [...content.insights.items]; n[i].date = v; updateContent('insights.items', n); }} />
                                 </div>
-                                <TextAreaField label="Full Title" value={item.title} onChange={v => { const n = [...content.insights.items]; n[i].title = v; updateContent('insights.items', n); }} />
+                                <TextField label="Full Title" value={item.title} onChange={v => { const n = [...content.insights.items]; n[i].title = v; updateContent('insights.items', n); }} />
+                                <TextAreaField label="Full Narrative" value={item.content || ""} onChange={v => { const n = [...content.insights.items]; n[i].content = v; updateContent('insights.items', n); }} />
                              </div>
                           </div>
                        </div>
@@ -419,11 +456,7 @@ const EditableImage = ({ src, className, alt }: { src: string, className?: strin
   return <img src={src} alt={alt} className={className} />;
 };
 
-const useCMS = () => {
-  const context = useContext(CMSContext);
-  if (!context) throw new Error('useCMS must be used within CMSProvider');
-  return context;
-};
+
 
 // --- LOGIN PAGE ---
 
@@ -532,7 +565,9 @@ const LoginPage = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
       alignItems: "center",
       gap: "10px",
       background: "#f0f3fa",
-      border: "1.5px solid transparent",
+      borderWidth: "1.5px",
+      borderStyle: "solid",
+      borderColor: "transparent",
       borderRadius: "12px",
       padding: "0 16px",
       height: "52px",
@@ -729,7 +764,7 @@ const Header = () => {
 };
 
 const Hero = () => {
-  const { content, updateContent, isEditMode } = useCMS();
+  const { content } = useCMS();
   return (
     <section className="relative min-h-screen pt-40 pb-20 overflow-hidden flex items-center">
       <div className="container relative z-20">
@@ -737,29 +772,29 @@ const Hero = () => {
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-primary-10 border border-accent-primary-20 text-accent-primary text-sm font-semibold mb-8">
               <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse"></span>
-              <EditableText value={content.hero.tagline} onChange={v => updateContent('hero.tagline', v)} />
+              <EditableText value={content.hero.tagline} />
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.1]">
-              <EditableTextArea 
-                value={content.hero.title} 
-                onChange={v => updateContent('hero.title', v)} 
-                className="text-5xl md:text-7xl font-extrabold"
-              />
+               {content.hero.title.split('Governance, Risk,').length > 1 ? (
+                 <>
+                   <span className="gradient-text">Governance, Risk,</span>
+                   {content.hero.title.split('Governance, Risk,')[1]}
+                 </>
+               ) : content.hero.title}
             </h1>
 
             <EditableTextArea 
-              value={content.hero.subtitle} 
-              onChange={v => updateContent('hero.subtitle', v)}
+              value={content.hero.subtitle}
               className="text-xl text-text-secondary mb-10 max-w-xl"
             />
 
             <div className="flex flex-wrap gap-5">
               <a href="#consultation" className="btn btn-primary px-10 h-16 text-lg">
-                <EditableText value={content.hero.ctaText} onChange={v => updateContent('hero.ctaText', v)} />
+                <EditableText value={content.hero.ctaText} />
               </a>
               <a href="#services" className="btn btn-secondary px-10 h-16 text-lg">
-                <EditableText value={content.hero.secondaryText} onChange={v => updateContent('hero.secondaryText', v)} /> <ChevronRight className="w-5 h-5" />
+                <EditableText value={content.hero.secondaryText} /> <ChevronRight className="w-5 h-5" />
               </a>
             </div>
             
@@ -779,16 +814,15 @@ const Hero = () => {
             <div className="rounded-3xl overflow-hidden glass-card p-2 border-accent-primary-20">
                <EditableImage 
                  src={content.hero.image} 
-                 onChange={v => updateContent('hero.image', v)} 
                  className="w-full rounded-2xl" 
                />
             </div>
             <div className="absolute -bottom-8 -left-8 glass-card p-8">
               <p className="text-3xl font-bold text-white">
-                <EditableText value={content.hero.stats.value} onChange={v => updateContent('hero.stats.value', v)} />
+                <EditableText value={content.hero.stats.value} />
               </p>
               <p className="text-xs text-text-muted uppercase tracking-widest">
-                <EditableText value={content.hero.stats.label} onChange={v => updateContent('hero.stats.label', v)} />
+                <EditableText value={content.hero.stats.label} />
               </p>
             </div>
           </motion.div>
@@ -799,7 +833,7 @@ const Hero = () => {
 };
 
 const ContentSection = () => {
-  const { content } = useCMS();
+  const { content, setCurrentPage, setSelectedArticle } = useCMS();
 
   return (
     <>
@@ -903,9 +937,12 @@ const ContentSection = () => {
                 <h4 className="text-xl font-bold text-white mb-6 leading-tight group-hover:text-accent-primary transition-colors min-h-[60px]">
                   <EditableTextArea value={item.title} className="text-xl font-bold bg-transparent" />
                 </h4>
-                <a href="#" className="inline-flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-white transition-all group/link">
+                <button 
+                  onClick={() => { setSelectedArticle(item); setCurrentPage('article'); window.scrollTo(0, 0); }}
+                  className="inline-flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-white transition-all group/link"
+                >
                   Read Full Article <ArrowRight className="w-4 h-4 text-accent-primary group-hover/link:translate-x-1 transition-transform" />
-                </a>
+                </button>
               </div>
             </div>
           ))}
@@ -923,6 +960,55 @@ const ContentSection = () => {
         </div>
       </div></div></section>
     </>
+  );
+};
+
+const ArticleDetail = () => {
+  const { selectedArticle, setCurrentPage } = useCMS();
+  
+  if (!selectedArticle) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-bg-primary pt-40 pb-32">
+      <div className="container max-w-4xl">
+        <button 
+          onClick={() => setCurrentPage('home')}
+          className="flex items-center gap-2 text-sm font-bold text-text-muted hover:text-accent-primary transition-colors mb-12 uppercase tracking-widest"
+        >
+          <ArrowRight className="w-4 h-4 rotate-180" /> Back to Perspectives
+        </button>
+
+        <div className="mb-16">
+          <span className="px-4 py-1.5 bg-accent-primary-10 border border-accent-primary-20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent-primary mb-8 inline-block">
+             {selectedArticle.category}
+          </span>
+          <h1 className="text-4xl md:text-7xl font-extrabold leading-[1.1] text-white selection-accent-primary">
+             {selectedArticle.title}
+          </h1>
+          <div className="flex items-center gap-4 mt-12 text-sm text-text-muted font-bold tracking-widest uppercase">
+             <span>{selectedArticle.date}</span>
+             <div className="w-1.5 h-1.5 rounded-full bg-accent-primary opacity-30"></div>
+             <span>CYBEREIGN Consulting</span>
+          </div>
+        </div>
+
+        <div className="rounded-3xl overflow-hidden glass-card p-2 mb-16 border-accent-primary-10">
+           <img src={selectedArticle.image} className="w-full h-auto rounded-2xl aspect-video object-cover" alt="Cover" />
+        </div>
+
+        <div className="prose prose-invert prose-2xl max-w-none">
+           <p className="text-xl md:text-2xl text-text-secondary leading-relaxed font-medium whitespace-pre-wrap">
+              {selectedArticle.content || "Full perspective content has not been detailed for this specific insight report."}
+           </p>
+           
+           <div className="mt-20 p-12 glass-card border-accent-primary-20">
+              <h3 className="text-2xl font-bold mb-4 text-white">Join the Dialogue</h3>
+              <p className="text-text-secondary mb-10">CYBEREIGN Consulting actively partners with organizations to implement these structures. To discuss this perspective in the context of your specific operations, request a dedicated consultation.</p>
+              <a href="#consultation" onClick={() => setCurrentPage('home')} className="btn btn-primary px-10 h-16 text-lg">Consult CYBEREIGN</a>
+           </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -989,8 +1075,14 @@ export default function App() {
     <div className="bg-bg-primary text-text-primary selection-accent-primary">
       <Header />
       <main className="transition-all duration-500">
-        <Hero />
-        <ContentSection />
+        {currentPage === 'home' ? (
+          <>
+            <Hero />
+            <ContentSection />
+          </>
+        ) : (
+          <ArticleDetail />
+        )}
       </main>
       <Footer />
     </div>
