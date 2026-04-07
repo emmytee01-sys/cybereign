@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Database Connection Settings (Update for Production)
 $db_host = 'localhost';
-$db_name = 'cybereign_cms';
-$db_user = 'root';
-$db_pass = '';
+$db_name = 'cybereig_cms';
+$db_user = 'cybereig_cms';
+$db_pass = 'Cyb3rR3ign_2026_Secure!';
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass, [
